@@ -1,4 +1,4 @@
-const firepit = require('../index');
+const firepit = require('../src');
 
 describe('firepit', () => {
 
