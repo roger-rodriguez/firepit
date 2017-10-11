@@ -25,6 +25,9 @@ const testTypes = {
   h: {
     type: 'json',
   },
+  i: {
+    type: 'enum'
+  }
 };
 
 describe('Model attributes', () => {

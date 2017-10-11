@@ -25,8 +25,72 @@ function magic(model) {
   }
 }
 
+function validateAttributeType(key, type) {
+  if (!type) throw new Error(`Missing attribute type for key "${key}"`);
+
+  const validTypes = ['string', 'integer', 'float', 'datetime', 'boolean', 'binary', 'array', 'json', 'enum'];
+
+  if (!validTypes.includes(type)) {
+    throw new Error(`Invalid type "${type}" for key "${key}"`); // todo log model name?
+  }
+}
+
+function validateTypeValue(type, value) {
+  switch (type) {
+    case 'string':
+      if (typeof value !== 'string') throw new Error('');
+      break;
+    case 'integer':
+      if (value === parseInt(value, 10)) throw new Error('');
+      break;
+    case 'float':
+      // TODO
+      break;
+    case 'datetime':
+      // TODO
+      break;
+    case 'boolean':
+      if (typeof value !== 'boolean') throw new Error('');
+      break;
+    case 'binary':
+      // TODO
+      break;
+    case 'array': {
+      if (!Array.isArray(value)) throw new Error('');
+      // for (let i = 0, len = value.length; i < len; i++) {
+      //   const item = value[i];
+      //   if (typeof item !== 'string' || typeof item !== 'number') throw new Error('');
+      // }
+      break;
+    }
+    case 'json':
+      // TODO
+      break;
+    case 'enum': {
+      if (!Array.isArray(value)) throw new Error('');
+      for (let i = 0, len = value.length; i < len; i++) {
+        const item = value[i];
+        if (typeof item !== 'string' || typeof item !== 'number') throw new Error('');
+      }
+      break;
+    }
+  }
+}
+
+function validateAttributes(attributes) {
+  const keys = Object.keys(attributes);
+
+  for (let i = 0, len = keys.length; i < len; i++) {
+    const key = keys[i];
+    const attribute = attributes[key];
+
+    validateAttributeType(attribute.type);
+    if (attribute.defaultsTo) validateTypeValue(attribute.type, attribute.defaultsTo); // todo handle 0/null/ etc
+  }
+}
+
 function schemaDefaults(name, schema) {
-  return Object.assign({}, {
+  const assigned = Object.assign({}, {
     schema: true,
     app: '[DEFAULT]',
     identity: name.toLowerCase(),
@@ -38,6 +102,8 @@ function schemaDefaults(name, schema) {
     collectionName: name.toLowerCase(), // TODO identity vs collectionName
     attributes: {}, // TODO will this deep merge correctly
   }, schema);
+
+  validateAttributes(schema.attributes);
 }
 
 class Model {
