@@ -1,1 +1,1 @@
-// TODO Init Firestore
+require('should');

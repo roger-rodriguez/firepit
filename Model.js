@@ -20,26 +20,45 @@ function magic(model) {
     const fieldName = toFirstUpper(field);
     const fieldProperties = model.schema.attributes[field]; // todo
 
-    model[`findBy${fieldName}`] = model._findByField.bind(model, field);
-    model[`findOneBy${fieldName}`] = model._findOneByField.bind(model, field);
+    model[`findBy${fieldName}`] = model.findByField.bind(model, field);
+    model[`findOneBy${fieldName}`] = model.findOneByField.bind(model, field);
   }
 }
 
+function schemaDefaults(name, schema) {
+  return Object.assign({}, {
+    schema: true,
+    identity: name.toLowerCase(),
+    autoId: true,
+    autoCreatedAt: true,
+    autoUpdatedAt: true,
+    autoCreatedBy: true,
+    autoUpdatedBy: true,
+    collectionName: name.toLowerCase(), // TODO
+    attributes: {},
+  }, schema);
+}
+
 class Model {
+
+  static create(name, schema) {
+    return new Model(name, schema);
+  }
+
   constructor(name, schema) {
     this.name = name;
-    this.schema = schema;
-    this._collectionRef = firebase.firestore().collection(schema.collectionName);
+    this.schema = schemaDefaults(name, schema);
+    this._collectionRef = firebase.firestore().collection(this.schema.collectionName);
     magic(this);
   }
 
-  _findOneByField(field, value) {
+  findOneByField(field, value) {
     return this._collectionRef.where(field, '==', value).limit(1).get().then((querySnapshot) => {
       return querySnapshot.docs[0] ? querySnapshot.docs[0].data() : undefined;
     });
   }
 
-  _findByField(field, value) {
+  findByField(field, value) {
     return this._collectionRef.where(field, '==', value).get().then((querySnapshot) => {
       const out = [];
       // Object.defineProperty(out, 'bar', {
@@ -86,9 +105,34 @@ class Model {
     });
   }
 
-  static create(name, schema) {
-    return new Model(name, schema);
+  createOrUpdate() {
   }
+
+  native() {
+  }
+
+  count() {
+  }
+
+  updateOne() {
+  }
+
+  update() {
+  }
+
+  create() {
+  }
+
+  destroy() {
+  }
+
+  findOrCreate() {
+  }
+
+  subscribe() {
+  }
+
+
 }
 
 module.exports = Model;
