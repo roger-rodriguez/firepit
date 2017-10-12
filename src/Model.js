@@ -19,6 +19,7 @@ class Model extends ModelInternal {
     return this.schema.collectionName;
   }
 
+  // TODO methods below need cleaning / api thought through
   findOneByField(field, value) {
     return this.collectionRef.where(field, '==', value).limit(1).get().then((querySnapshot) => {
       return querySnapshot.docs[0] ? querySnapshot.docs[0].data() : undefined;
