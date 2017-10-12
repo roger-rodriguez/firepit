@@ -15,11 +15,11 @@ describe('String Type Attributes', () => {
   it('should not throw if defaultsTo is same type', () => {
     testApp.config = {
       attributes: {
-        1: {
+        'a1': {
           type: 'string',
           defaultsTo: 'foobar',
         },
-        2: {
+        'a2': {
           type: 'string',
           defaultsTo: "foobarbaz",
         },
@@ -27,28 +27,26 @@ describe('String Type Attributes', () => {
     };
 
     const model = new Model(testAppName, 'Test');
-    model.validateSchema();
   });
 
   it('should throw if defaultsTo is not same type', () => {
     testApp.config = {
       attributes: {
-        1: {
+        'a1': {
           type: 'string',
           defaultsTo: 123,
         }
       }
     };
 
-    const model = new Model(testAppName, 'Test');
 
     (function () {
-      model.validateSchema();
+      const model = new Model(testAppName, 'Test');
     }).should.throw() // TODO error
   });
 
   afterEach(() => {
-    delete internals.apps[testAppName];
+    internals.deleteInstance(testAppName);
   });
 
 });

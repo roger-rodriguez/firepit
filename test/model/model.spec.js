@@ -13,7 +13,7 @@ describe('Model', () => {
   });
 
   it('should construct with required properties', () => {
-    const model = new Model(testAppName, 'Test');
+    const model = new Model(testAppName, 'Test', { schema: false });
     model.should.have.property('appName', testAppName);
     model.should.have.property('modelName', 'Test');
     model.should.have.property('app'); // TODO firebase instance?
@@ -26,26 +26,24 @@ describe('Model', () => {
     };
 
     const model = new Model(testAppName, 'Test');
-    model.validateSchema();
   });
 
   it('should throw when constructing without attributes if schema true', () => {
     testApp.config = {
       schema: true,
     };
-    const model = new Model(testAppName, 'Test');
     (function () {
-      model.validateSchema();
+      const model = new Model(testAppName, 'Test');
     }).should.throw() // TODO error
   });
 
   it('should construct with a default schema', () => {
     const name = 'Test';
-    const model = new Model(testAppName, name);
+    const model = new Model(testAppName, name, { schema: true, attributes: { foo: 'string' } });
     const schema = model.schema;
 
     schema.should.have.property('schema', true);
-    schema.should.have.property('app', '[DEFAULT]'); // TODO handled by firebase instance?
+    schema.app.should.have.property('name', testAppName); // TODO handled by firebase instance?
     schema.should.have.property('identity', name.toLowerCase());
     schema.should.have.property('autoId', true);
     schema.should.have.property('autoCreatedAt', true);
@@ -58,7 +56,6 @@ describe('Model', () => {
   it('should construct with merged attributes', () => {
     testApp.config = {
       schema: false,
-      app: 'baz',
       identity: 'foobar',
       autoId: false,
       autoCreatedAt: false,
@@ -78,7 +75,7 @@ describe('Model', () => {
 
     schema.should.be.an.instanceOf(Object);
     schema.should.have.property('schema', false);
-    schema.should.have.property('app', 'baz');
+    schema.app.should.have.property('name', testAppName);
     schema.should.have.property('identity', 'foobar');
     schema.should.have.property('autoId', false);
     schema.should.have.property('autoCreatedAt', false);
@@ -92,10 +89,10 @@ describe('Model', () => {
   });
 
   afterEach(() => {
-    delete internals.apps[testAppName];
+    internals.deleteInstance(testAppName);
   });
 
-  //
+
   // it('should construct with magic methods', () => {
   //   const model = Model.create('Test', {
   //     attributes: {

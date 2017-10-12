@@ -1,3 +1,4 @@
 --recursive
+--require test/init.js
 --timeout 120000
 --bail

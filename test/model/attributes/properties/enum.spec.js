@@ -15,7 +15,7 @@ describe('Enum Attribute Property', () => {
   it('should accept an array with length', () => {
     testApp.config = {
       attributes: {
-        1: {
+       'a1': {
           type: 'string',
           enum: ['1'],
         },
@@ -23,13 +23,12 @@ describe('Enum Attribute Property', () => {
     };
 
     const model = new Model(testAppName, 'Test');
-    model.validateSchema();
   });
 
   it('should throw is array length is empty', () => {
     testApp.config = {
       attributes: {
-        1: {
+        'a1': {
           type: 'string',
           enum: ['1'],
         },
@@ -37,11 +36,10 @@ describe('Enum Attribute Property', () => {
     };
 
     const model = new Model(testAppName, 'Test');
-    model.validateSchema();
   });
 
   afterEach(() => {
-    delete internals.apps[testAppName];
+    internals.deleteInstance(testAppName);
   });
 
 });

@@ -15,15 +15,15 @@ describe('Integer Type Attributes', () => {
   it('should not throw if defaultsTo is same type', () => {
     testApp.config = {
       attributes: {
-        1: {
+        'a1': {
           type: 'integer',
           defaultsTo: 0,
         },
-        2: {
+        'a2': {
           type: 'integer',
           defaultsTo: -1,
         },
-        3: {
+        'a3': {
           type: 'integer',
           defaultsTo: 123456789123456789,
         },
@@ -31,32 +31,30 @@ describe('Integer Type Attributes', () => {
     };
 
     const model = new Model(testAppName, 'Test');
-    model.validateSchema();
   });
 
   it('should throw if defaultsTo is not same type', () => {
     testApp.config = {
       attributes: {
-        1: {
+        'a1': {
           type: 'integer',
           defaultsTo: 0.0,
         },
-        2: {
+        'a2': {
           type: 'integer',
           defaultsTo: '12',
         },
       }
     };
 
-    const model = new Model(testAppName, 'Test');
 
     (function () {
-      model.validateSchema();
+      const model = new Model(testAppName, 'Test');
     }).should.throw() // TODO error
   });
 
   afterEach(() => {
-    delete internals.apps[testAppName];
+    internals.deleteInstance(testAppName);
   });
 
 });
