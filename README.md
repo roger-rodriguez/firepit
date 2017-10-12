@@ -30,6 +30,8 @@ firebase.firepit().model('User', {
   },
 });
 
+firebase.firepit().initilize();
+
 User
   .create({
     firstName: 'Ben',
