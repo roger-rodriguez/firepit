@@ -2,78 +2,99 @@ const Model = require('../../src/Model');
 const internals = require('../../src/internals');
 
 const testAppName = 'ModelTestApp';
-let modelTestApp;
+let testApp;
 
 describe('Model', () => {
 
   beforeEach(() => {
-    modelTestApp = internals.createInstance({
+    testApp = internals.createInstance({
       name: testAppName,
     });
   });
 
+  it('should construct with required properties', () => {
+    const model = new Model(testAppName, 'Test');
+    model.should.have.property('appName', testAppName);
+    model.should.have.property('modelName', 'Test');
+    model.should.have.property('app'); // TODO firebase instance?
+    model.should.have.property('schema').and.be.an.instanceOf(Object);
+  });
+
   it('should construct without attributes if schema false', () => {
-    modelTestApp.config = {
+    testApp.config = {
       schema: false,
     };
+
     const model = new Model(testAppName, 'Test');
     model.validateSchema();
+  });
+
+  it('should throw when constructing without attributes if schema true', () => {
+    testApp.config = {
+      schema: true,
+    };
+    const model = new Model(testAppName, 'Test');
+    (function () {
+      model.validateSchema();
+    }).should.throw() // TODO error
+  });
+
+  it('should construct with a default schema', () => {
+    const name = 'Test';
+    const model = new Model(testAppName, name);
+    const schema = model.schema;
+
+    schema.should.have.property('schema', true);
+    schema.should.have.property('app', '[DEFAULT]'); // TODO handled by firebase instance?
+    schema.should.have.property('identity', name.toLowerCase());
+    schema.should.have.property('autoId', true);
+    schema.should.have.property('autoCreatedAt', true);
+    schema.should.have.property('autoCreatedBy', true);
+    schema.should.have.property('autoUpdatedAt', true);
+    schema.should.have.property('autoUpdatedBy', true);
+    schema.should.have.property('collectionName', name.toLowerCase());
+  });
+
+  it('should construct with merged attributes', () => {
+    testApp.config = {
+      schema: false,
+      app: 'baz',
+      identity: 'foobar',
+      autoId: false,
+      autoCreatedAt: false,
+      autoUpdatedAt: false,
+      autoCreatedBy: false,
+      autoUpdatedBy: false,
+      collectionName: 'foobar',
+      attributes: {
+        foo: {
+          type: 'string',
+        },
+      }
+    };
+
+    const model = new Model(testAppName, 'Test');
+    const schema = model.schema;
+
+    schema.should.be.an.instanceOf(Object);
+    schema.should.have.property('schema', false);
+    schema.should.have.property('app', 'baz');
+    schema.should.have.property('identity', 'foobar');
+    schema.should.have.property('autoId', false);
+    schema.should.have.property('autoCreatedAt', false);
+    schema.should.have.property('autoCreatedBy', false);
+    schema.should.have.property('autoUpdatedAt', false);
+    schema.should.have.property('autoUpdatedBy', false);
+    schema.should.have.property('collectionName', 'foobar');
+    schema.should.have.property('attributes');
+    schema.attributes.should.be.an.instanceOf(Object);
+    schema.attributes.should.have.property('foo').and.be.an.instanceOf(Object);
   });
 
   afterEach(() => {
     delete internals.apps[testAppName];
   });
 
-  // it('should construct with a default schema', () => {
-  //   const model = Model.create('Test');
-  //   model.should.have.property('schema').and.should.be.an.instanceOf(Object);
-  //   model.schema.should.have.property('schema', true);
-  //   model.schema.should.have.property('app', '[DEFAULT]');
-  //   model.schema.should.have.property('identity', 'test');
-  //   model.schema.should.have.property('autoId', true);
-  //   model.schema.should.have.property('autoCreatedAt', true);
-  //   model.schema.should.have.property('autoCreatedBy', true);
-  //   model.schema.should.have.property('autoUpdatedAt', true);
-  //   model.schema.should.have.property('autoUpdatedBy', true);
-  //   model.schema.should.have.property('collectionName', 'test');
-  //   model.schema.should.have.property('attributes');
-  //   model.schema.attributes.should.be.an.instanceOf(Object);
-  // });
-  //
-  // it('should construct with merged attributes', () => {
-  //   const model = Model.create('Test', {
-  //     schema: false,
-  //     app: 'baz',
-  //     identity: 'foobar',
-  //     autoId: false,
-  //     autoCreatedAt: false,
-  //     autoUpdatedAt: false,
-  //     autoCreatedBy: false,
-  //     autoUpdatedBy: false,
-  //     collectionName: 'foobar',
-  //     attributes: {
-  //       foo: {
-  //         type: 'string',
-  //       },
-  //     }
-  //   });
-  //
-  //   model.should.have.property('schema');
-  //   model.schema.should.be.an.instanceOf(Object);
-  //   model.schema.should.have.property('schema', false);
-  //   model.schema.should.have.property('app', 'baz');
-  //   model.schema.should.have.property('identity', 'foobar');
-  //   model.schema.should.have.property('autoId', false);
-  //   model.schema.should.have.property('autoCreatedAt', false);
-  //   model.schema.should.have.property('autoCreatedBy', false);
-  //   model.schema.should.have.property('autoUpdatedAt', false);
-  //   model.schema.should.have.property('autoUpdatedBy', false);
-  //   model.schema.should.have.property('collectionName', 'foobar');
-  //   model.schema.should.have.property('attributes');
-  //   model.schema.attributes.should.be.an.instanceOf(Object);
-  //   model.schema.attributes.should.have.property('foo').and.be.an.instanceOf(Object); // TODO deep merge?
-  // });
-  //
   //
   // it('should construct with magic methods', () => {
   //   const model = Model.create('Test', {
