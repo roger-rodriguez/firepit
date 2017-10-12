@@ -13,7 +13,7 @@ const firepit = {
     for (let i = 0, len = schemaKeys.length; i < len; i++) {
       const key = schemaKeys[i];
       const schema = appInternal.schemas[i];
-      appInternal.models[key] = new Model(appName, key, schema);
+      appInternal.models[key] = new Model(appName, key);
     }
     // Validate models/associations
     for (let i = 0, len = schemaKeys.length; i < len; i++) {
