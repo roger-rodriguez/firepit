@@ -9,6 +9,7 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
+    "deeps": "^1.4.4",
     "firebase-admin": "^5.4.2"
   },
   "devDependencies": {

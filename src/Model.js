@@ -1,18 +1,8 @@
-// const deeps = require('deeps');
-const firebase = require("firebase-admin");
-
-const serviceAccount = require('../firepit.json');
-
-firebase.initializeApp({
-  credential: firebase.credential.cert(serviceAccount),
-  databaseURL: "https://firepit-tests.firebaseio.com"
-});
-
 function toFirstUpper(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-function magic(model) {
+function attachMagicMethods(model) {
   const fields = Object.keys(model.schema.attributes);
 
   for (let i = 0, len = fields.length; i < len; i++) {
@@ -25,13 +15,13 @@ function magic(model) {
   }
 }
 
-function validateAttributeType({ type }) {
-  if (!type) throw new Error(`Missing attribute type for key "${key}"`);
+function validateAttributeType(modelName, key, attribute) {
+  if (!attribute.type) throw new Error(`Missing attribute type for key "${key}"`);
 
-  const validTypes = ['string', 'integer', 'float', 'datetime', 'boolean', 'binary', 'array', 'json', 'enum'];
+  const validTypes = ['string', 'email', 'integer', 'float', 'datetime', 'boolean', 'binary', 'array', 'json'];
 
-  if (!validTypes.includes(type)) {
-    throw new Error(`Invalid type "${type}" for key "${key}"`); // todo log model name?
+  if (!validTypes.includes(attribute.type)) {
+    throw new Error(`Invalid type "${attribute.type}" for key "${key}" on "${modelName}" model`); // todo log model name?
   }
 }
 
@@ -39,6 +29,9 @@ function validateTypeValue(type, value) {
   switch (type) {
     case 'string':
       if (typeof value !== 'string') throw new Error('');
+      break;
+    case 'email':
+
       break;
     case 'integer':
       if (value === parseInt(value, 10)) throw new Error('');
@@ -77,7 +70,7 @@ function validateTypeValue(type, value) {
   }
 }
 
-function validateAttributes(attributes) {
+function validateAttributes(modelName, attributes) {
   if (!attributes) return;
 
   const keys = Object.keys(attributes);
@@ -86,43 +79,19 @@ function validateAttributes(attributes) {
     const key = keys[i];
     const attribute = attributes[key];
 
-    validateAttributeType(attribute);
+    validateAttributeType(modelName, key, attribute);
     if (attribute.defaultsTo) validateTypeValue(attribute.type, attribute.defaultsTo); // todo handle 0/null/ etc
   }
 }
 
-function schemaDefaults(name, schema = {}) {
-  const assigned = Object.assign({}, {
-    schema: true,
-    app: '[DEFAULT]',
-    identity: name.toLowerCase(),
-    autoId: true,
-    autoCreatedAt: true,
-    autoUpdatedAt: true,
-    autoCreatedBy: true,
-    autoUpdatedBy: true,
-    collectionName: name.toLowerCase(), // TODO identity vs collectionName
-    attributes: {}, // TODO will this deep merge correctly
-  }, schema);
 
-  validateAttributes(schema.attributes);
 
-  return assigned;
-}
+const BaseModel = require('./BaseModel');
 
-class Model {
+class Model extends BaseModel {
 
-  static create(name, schema) {
-    return new Model(name, schema);
-  }
-
-  constructor(name, schema) {
-    if (!name) throw new Error('name required'); // todo
-
-    this.name = name;
-    this.schema = schemaDefaults(name, schema);
-    this._collectionRef = firebase.firestore().collection(this.schema.collectionName);
-    magic(this);
+  constructor(appName, modelName) {
+    super(appName, modelName);
   }
 
   findOneByField(field, value) {
@@ -161,7 +130,7 @@ class Model {
     });
   }
 
-  findOne(filter) {
+  findOne(filter = {}) {
 
     let query = this._collectionRef;
 
