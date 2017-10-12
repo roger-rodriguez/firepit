@@ -39,7 +39,9 @@ describe('Model', () => {
       autoUpdatedBy: false,
       collectionName: 'foobar',
       attributes: {
-        foo: 'bar',
+        foo: {
+          type: 'string',
+        },
       }
     });
 
@@ -56,17 +58,25 @@ describe('Model', () => {
     model.schema.should.have.property('collectionName', 'foobar');
     model.schema.should.have.property('attributes');
     model.schema.attributes.should.be.an.instanceOf(Object);
-    model.schema.attributes.should.have.property('foo', 'bar'); // TODO deep merge?
+    model.schema.attributes.should.have.property('foo').and.be.an.instanceOf(Object); // TODO deep merge?
   });
 
 
   it('should construct with magic methods', () => {
     const model = Model.create('Test', {
       attributes: {
-        foo: null,
-        bar: null,
-        fooBar: null,
-        foo_bar: null,
+        foo: {
+          type: 'string',
+        },
+        bar: {
+          type: 'string',
+        },
+        fooBar: {
+          type: 'string',
+        },
+        foo_bar: {
+          type: 'string',
+        },
       }
     });
 

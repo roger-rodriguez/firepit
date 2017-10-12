@@ -25,7 +25,7 @@ function magic(model) {
   }
 }
 
-function validateAttributeType(key, type) {
+function validateAttributeType({ type }) {
   if (!type) throw new Error(`Missing attribute type for key "${key}"`);
 
   const validTypes = ['string', 'integer', 'float', 'datetime', 'boolean', 'binary', 'array', 'json', 'enum'];
@@ -78,18 +78,20 @@ function validateTypeValue(type, value) {
 }
 
 function validateAttributes(attributes) {
+  if (!attributes) return;
+
   const keys = Object.keys(attributes);
 
   for (let i = 0, len = keys.length; i < len; i++) {
     const key = keys[i];
     const attribute = attributes[key];
 
-    validateAttributeType(attribute.type);
+    validateAttributeType(attribute);
     if (attribute.defaultsTo) validateTypeValue(attribute.type, attribute.defaultsTo); // todo handle 0/null/ etc
   }
 }
 
-function schemaDefaults(name, schema) {
+function schemaDefaults(name, schema = {}) {
   const assigned = Object.assign({}, {
     schema: true,
     app: '[DEFAULT]',
@@ -104,6 +106,8 @@ function schemaDefaults(name, schema) {
   }, schema);
 
   validateAttributes(schema.attributes);
+
+  return assigned;
 }
 
 class Model {
