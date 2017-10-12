@@ -7,8 +7,6 @@ firepit(firebase.initializeApp({
   databaseURL: "https://firepit-tests.firebaseio.com"
 }));
 
-firebase.database();
-
 firebase.firepit().model('User', {
   attributes: {
     name: { type: 'string' },

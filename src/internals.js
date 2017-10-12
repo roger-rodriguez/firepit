@@ -5,11 +5,13 @@ const internals = {
 
 module.exports = internals;
 
-module.exports.createInstance = function (appInstance) {
+module.exports.createInstance = function (appInstance, config) {
   internals.apps[appInstance.name] = {
     app: appInstance,
     schemas: {},
     models: {},
-    config: null,
+    config: config || null,
   };
+
+  return internals.apps[appInstance.name];
 };
