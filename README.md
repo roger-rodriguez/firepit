@@ -17,7 +17,7 @@ import firepit from 'firepit';
 const app = firebase.initilizeApp({ ... });
 firepit.use(app);
 
-firebase.firepit().model('User', {
+firebase.firepit().createModel('User', {
   attributes: {
     firstName: 'string',
     lastName: 'string',
@@ -31,6 +31,8 @@ firebase.firepit().model('User', {
 });
 
 firebase.firepit().initilize();
+
+const User = firebase.firepit().model('User');
 
 User
   .create({
