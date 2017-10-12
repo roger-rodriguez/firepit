@@ -62,7 +62,7 @@ class BaseModel {
   }
 
   validateDefaultValue(key, attribute) {
-    if (hasOwnProperty.call(attribute, 'defaultsTo')) {
+    if (attribute.type !== 'any' && hasOwnProperty.call(attribute, 'defaultsTo')) {
       if (typeOf(attribute.defaultsTo) !== attribute.type) {
         throw new Error(`Default value ${attribute.defaultsTo} is not of type ${attribute.type}`); // TODO
       }
@@ -75,14 +75,23 @@ class BaseModel {
         throw new Error(`Enum prop must be an array`); // TODO
       }
 
-      for (let i = 0, len = attribute.enum.length; i < len; i++) {
-        const value = attribute.enum[i];
-        if (typeOf(value) !== attribute.type) {
-          throw new Error(`Enum contains value isnt of the type ${attribute.type}`); // TODO
+      if (attribute.type !== 'any') {
+        for (let i = 0, len = attribute.enum.length; i < len; i++) {
+          const value = attribute.enum[i];
+          if (typeOf(value) !== attribute.type) {
+            throw new Error(`Enum contains value isnt of the type ${attribute.type}`); // TODO
+          }
+        }
+      } else {
+        for (let i = 0, len = attribute.enum.length; i < len; i++) {
+          const value = attribute.enum[i];
+          if (typeOf(value) !== 'string' || typeOf(value) !== 'number') {
+            throw new Error(`Enum contains value which isnt a primitive value`); // TODO
+          }
         }
       }
 
-      if (hasOwnProperty.call(attribute, 'defaultsTo') && !attribute.enum.includes(attribute.defaultValue)) {
+      if (hasOwnProperty.call(attribute, 'defaultsTo') && !attribute.enum.includes(attribute.defaultsTo)) {
         throw new Error(`Default value not in enum array`); // TODO
       }
     }
