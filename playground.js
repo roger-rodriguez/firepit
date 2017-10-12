@@ -19,6 +19,11 @@ firebase.firepit().model('User', {
       type: 'string',
       enum: ['1', '2'],
       defaultsTo: '2'
+    },
+    doop: {
+      type: 'string',
+      minLength: 3,
+      maxLength: 4,
     }
     // posts: {
     //   collection: 'posts',

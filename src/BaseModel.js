@@ -24,6 +24,18 @@ function typeOf(value) {
   return typeof value;
 }
 
+function isBoolean(value) {
+  return typeof value === 'boolean';
+}
+
+function isString(value) {
+  return typeof value === 'boolean';
+}
+
+function isInteger(value) {
+  return value === parseInt(value, 10)
+}
+
 class BaseModel {
 
   constructor(appName, modelName) {
@@ -49,13 +61,22 @@ class BaseModel {
           type: attribute,
         };
       }
-      this.validateAttributeType(key, attribute);
+
+      // TODO What if there's 2 attributes with the same fieldName
+      if (!hasOwnProperty.call(attribute, 'fieldName')) {
+
+      }
+
+      this.validateType(key, attribute);
       this.validateDefaultValue(key, attribute);
       this.validateEnums(key, attribute);
+      this.validateRequired(key, attribute);
+      this.validateFieldName(key, attribute);
+      this.validateLength(key, attribute);
     }
   }
 
-  validateAttributeType(key, attribute) {
+  validateType(key, attribute) {
     if (!INTERNALS.validTypes.includes(attribute.type)) {
       throw new Error(`Type ${attribute.type} aint valid`); // TODO
     }
@@ -96,6 +117,52 @@ class BaseModel {
       }
     }
   }
+
+  validateRequired(key, attribute) {
+    if (hasOwnProperty.call(attribute, 'required') && !isBoolean(attribute.required)) {
+      throw new Error(`Required key is not a bool`); // TODO
+    }
+  }
+
+  validateFieldName(key, attribute) {
+    // if (!isString(attribute.fieldName)) { // TODO no spaces/funky chars
+    //   throw new Error('Field name must be a string'); // TODO
+    // }
+  }
+
+  _isValidLength(type, value) {
+    if (!isInteger(value)) {
+      throw new Error(`${type} must be an integer`); // TODO
+    }
+
+    if (value < 0) {
+      throw new Error(`${type} value must be greater than 0`); // TODO
+    }
+  }
+
+  validateLength(key, attribute) {
+    if (hasOwnProperty.call(attribute, 'minLength') || hasOwnProperty.call(attribute, 'maxLength')) {
+      if (typeOf(attribute.type) !== 'string') {
+        throw new Error(`Using minLength or maxLength requires attribute type to be string`); // TODO
+      }
+
+      if (hasOwnProperty.call(attribute, 'minLength')) {
+        this._isValidLength('minLength', attribute.minLength);
+      }
+      if (hasOwnProperty.call(attribute, 'maxLength')) {
+        this._isValidLength('maxLength', attribute.maxLength);
+      }
+      if (hasOwnProperty.call(attribute, 'minLength') && hasOwnProperty.call(attribute, 'maxLength')) {
+        if (attribute.minLength >= attribute.maxLength) {
+          throw new Error(`minLength has to be less than maxLength`); // TODO
+        }
+        if (attribute.minLength > attribute.maxLength) {
+          throw new Error(`maxLength has to be greater than minLength`); // TODO
+        }
+      }
+    }
+  }
+
 }
 
 module.exports = BaseModel;
