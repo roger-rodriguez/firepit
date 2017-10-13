@@ -14,6 +14,7 @@ class SchemaInternal {
   constructor(appName, modelName, schema) {
     this._appName = appName;
     this._modelName = modelName;
+    this._validatedAssociations = false;
     this._schema = mergeDeep(
       Object.assign({}, DEFAULTS.schema(modelName), schema || APPS[appName].config),
       APPS[appName].schemas[modelName]
@@ -56,6 +57,7 @@ class SchemaInternal {
 
   _validateAssociations() {
     // todo validate any associations
+    this._validatedAssociations = true;
   }
 }
 
