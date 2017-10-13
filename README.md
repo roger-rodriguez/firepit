@@ -94,9 +94,7 @@ const City = firebase.firepit().createModel('City', {
 City
   .update('SF', {
     likes: {
-      $incBy: 1,
-      // or
-      // $decrBy: 666
+      $incrBy: 1,
     }
   })
   .then((postDocument) => {
