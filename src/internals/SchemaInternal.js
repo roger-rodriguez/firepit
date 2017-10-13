@@ -44,6 +44,7 @@ class SchemaInternal {
 
       validateFieldName(key, this._modelName, attribute);
       validateType(key, this._modelName, attribute);
+      // todo defaultsTo as a function support
       validateDefaultValue(key, this._modelName, attribute);
       validateEnums(key, this._modelName, attribute);
       validateRequired(key, this._modelName, attribute);
