@@ -38,7 +38,7 @@ class Model extends ModelInternal {
     });
   }
 
-  find(filter) {
+  find(filter = {}) {
     const fields = Object.keys(filter);
 
     let query = this.collectionRef;
@@ -82,10 +82,10 @@ class Model extends ModelInternal {
   count() {
   }
 
-  updateOne() {
+  updateOne(id, obj) {
   }
 
-  update() {
+  update(id, object) {
   }
 
   create() {
