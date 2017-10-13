@@ -66,5 +66,7 @@ INTERNALS.deleteInstance = function deleteInstance(appName) {
 
 INTERNALS.UTILS = require('../utils');
 
+INTERNALS.STRINGS = require('./strings');
+
 module.exports = INTERNALS;
 
