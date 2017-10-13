@@ -48,6 +48,8 @@ class SchemaInternal {
       validateEnums(key, this._modelName, attribute);
       validateRequired(key, this._modelName, attribute);
       validateLength(key, this._modelName, attribute);
+
+      // todo pluck associations fields and store as part of schema class - for later use
     }
   }
 
