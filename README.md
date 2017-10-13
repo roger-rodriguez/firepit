@@ -94,7 +94,7 @@ const City = firebase.firepit().createModel('City', {
 City
   .update('SF', {
     $inc: {
-      likes: 1,
+      population: 1,
     },
   })
   .then((postDocument) => {
