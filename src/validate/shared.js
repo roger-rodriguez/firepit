@@ -14,6 +14,13 @@ const validatorForType = {
   boolean: isBoolean,
 };
 
+const sorts = {
+  '1': 'asc',
+  '-1': 'asc',
+  'asc': '1',
+  'desc': '-1',
+};
+
 // Source: https://cloud.google.com/bigquery/docs/reference/standard-sql/lexical
 const REGEXP_FIELD_NAME = new RegExp(
   `^(?:\\.?((?:(?:[A-Za-z_][A-Za-z_0-9]*)|(?:[A-Za-z_][A-Za-z_0-9]*))+))$`
@@ -34,6 +41,15 @@ module.exports = {
   validateValueForType(value, type) {
     if (!validatorForType[type]) return false;
     return validatorForType[type](value);
+  },
+
+  /**
+   *
+   * @param value
+   * @return {boolean}
+   */
+  isValidSort(value) {
+    return !!sorts[value];
   },
 
   /**
