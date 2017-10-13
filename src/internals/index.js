@@ -8,6 +8,7 @@ INTERNALS.DEFAULTS = {
   schema(name) {
     return {
       schema: true,
+      limit: 20, // 0 for everything / ignore
       app: '[DEFAULT]',
       identity: name.toLowerCase(),
       autoId: true,
