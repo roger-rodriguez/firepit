@@ -12,7 +12,7 @@ function attachMagicMethods(model) {
     const field = fields[i];
     const fieldName = toFirstUpper(field);
     const fieldProperties = model.schema.attributes[field]; // todo
-
+    // TODO should transform fields like first_name to work like: findByFirstName - no underscores
     model[`findBy${fieldName}`] = model.findByField.bind(model, field);
     model[`findOneBy${fieldName}`] = model.findOneByField.bind(model, field);
   }
