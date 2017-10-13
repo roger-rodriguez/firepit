@@ -1,5 +1,6 @@
 const Model = require('../../../../src/Model');
 const internals = require('../../../../src/internals');
+const helper = require('./helper');
 
 const testAppName = 'TestApp';
 let testApp;
@@ -12,42 +13,62 @@ describe('Integer Type Attributes', () => {
     });
   });
 
-  it('should not throw if defaultsTo is same type', () => {
-    testApp.config = {
-      attributes: {
-        'a1': {
-          type: 'integer',
-          defaultsTo: 0,
-        },
-        'a2': {
-          type: 'integer',
-          defaultsTo: -1,
-        },
-        'a3': {
-          type: 'integer',
-          defaultsTo: 123456789123456789,
-        },
-      }
-    };
+  it('should throw if defaultsTo is a json', () => {
+    testApp.config = helper('integer', 'json');
+    (function () {
+      const model = new Model(testAppName, 'Test');
+    }).should.throw() // TODO error
+  });
 
+  it('should throw if defaultsTo is a null', () => {
+    testApp.config = helper('integer', 'null');
+    (function () {
+      const model = new Model(testAppName, 'Test');
+    }).should.throw() // TODO error
+  });
+
+  it('should throw if defaultsTo is a array', () => {
+    testApp.config = helper('integer', 'array');
+    (function () {
+      const model = new Model(testAppName, 'Test');
+    }).should.throw() // TODO error
+  });
+
+  it('should throw if defaultsTo is a object', () => {
+    testApp.config = helper('integer', 'object');
+    (function () {
+      const model = new Model(testAppName, 'Test');
+    }).should.throw() // TODO error
+  });
+
+  it('should throw if defaultsTo is a float', () => {
+    testApp.config = helper('integer', 'float');
+    (function () {
+      const model = new Model(testAppName, 'Test');
+    }).should.throw() // TODO error
+  });
+
+  it('should throw if defaultsTo is a string', () => {
+    testApp.config = helper('integer', 'string');
+    (function () {
+      const model = new Model(testAppName, 'Test');
+    }).should.throw() // TODO error
+  });
+
+  it('should not throw if defaultsTo is a integer', () => {
+    testApp.config = helper('integer', 'integer');
     const model = new Model(testAppName, 'Test');
   });
 
-  it('should throw if defaultsTo is not same type', () => {
-    testApp.config = {
-      attributes: {
-        'a1': {
-          type: 'integer',
-          defaultsTo: 0.0,
-        },
-        'a2': {
-          type: 'integer',
-          defaultsTo: '12',
-        },
-      }
-    };
+  it('should throw if defaultsTo is a boolean', () => {
+    testApp.config = helper('integer', 'boolean');
+    (function () {
+      const model = new Model(testAppName, 'Test');
+    }).should.throw() // TODO error
+  });
 
-
+  it('should throw if defaultsTo is a datetime', () => {
+    testApp.config = helper('integer', 'datetime');
     (function () {
       const model = new Model(testAppName, 'Test');
     }).should.throw() // TODO error

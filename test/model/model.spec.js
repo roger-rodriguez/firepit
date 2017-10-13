@@ -88,62 +88,58 @@ describe('Model', () => {
     schema.attributes.should.have.property('foo').and.be.an.instanceOf(Object);
   });
 
+  it('should construct with default query methods', () => {
+    testApp.config = {
+      schema: false,
+    };
+    const model = new Model(testAppName, 'Test');
+
+    model.should.have.property('findOneByField').and.be.an.instanceOf(Function);
+    model.should.have.property('findByField').and.be.an.instanceOf(Function);
+    model.should.have.property('find').and.be.an.instanceOf(Function);
+    model.should.have.property('findOne').and.be.an.instanceOf(Function);
+    model.should.have.property('createOrUpdate').and.be.an.instanceOf(Function);
+    model.should.have.property('native').and.be.an.instanceOf(Function);
+    model.should.have.property('count').and.be.an.instanceOf(Function);
+    model.should.have.property('updateOne').and.be.an.instanceOf(Function);
+    model.should.have.property('update').and.be.an.instanceOf(Function);
+    model.should.have.property('create').and.be.an.instanceOf(Function);
+    model.should.have.property('destroy').and.be.an.instanceOf(Function);
+    model.should.have.property('findOrCreate').and.be.an.instanceOf(Function);
+    model.should.have.property('subscribe').and.be.an.instanceOf(Function);
+  });
+
+  it('should construct with magic methods', () => {
+    const model = new Model(testAppName, 'Test', {
+      attributes: {
+        foo: {
+          type: 'string',
+        },
+        bar: {
+          type: 'string',
+        },
+        fooBar: {
+          type: 'string',
+        },
+        foo_bar: {
+          type: 'string',
+        },
+      }
+    });
+
+    model.should.have.property('findByFoo').and.be.an.instanceOf(Function);
+    model.should.have.property('findByBar').and.be.an.instanceOf(Function);
+    model.should.have.property('findByFooBar').and.be.an.instanceOf(Function);
+    model.should.have.property('findByFoo_bar').and.be.an.instanceOf(Function);
+
+    model.should.have.property('findOneByFoo').and.be.an.instanceOf(Function);
+    model.should.have.property('findOneByBar').and.be.an.instanceOf(Function);
+    model.should.have.property('findOneByFooBar').and.be.an.instanceOf(Function);
+    model.should.have.property('findOneByFoo_bar').and.be.an.instanceOf(Function);
+  });
+
   afterEach(() => {
     internals.deleteInstance(testAppName);
   });
-
-
-  // it('should construct with magic methods', () => {
-  //   const model = Model.create('Test', {
-  //     attributes: {
-  //       foo: {
-  //         type: 'string',
-  //       },
-  //       bar: {
-  //         type: 'string',
-  //       },
-  //       fooBar: {
-  //         type: 'string',
-  //       },
-  //       foo_bar: {
-  //         type: 'string',
-  //       },
-  //     }
-  //   });
-  //
-  //   model.should.have.property('findByFoo').and.be.an.instanceOf(Function);
-  //   model.should.have.property('findByBar').and.be.an.instanceOf(Function);
-  //   model.should.have.property('findByFooBar').and.be.an.instanceOf(Function);
-  //   model.should.have.property('findByFoo_bar').and.be.an.instanceOf(Function);
-  //
-  //   model.should.have.property('findOneByFoo').and.be.an.instanceOf(Function);
-  //   model.should.have.property('findOneByBar').and.be.an.instanceOf(Function);
-  //   model.should.have.property('findOneByFooBar').and.be.an.instanceOf(Function);
-  //   model.should.have.property('findOneByFoo_bar').and.be.an.instanceOf(Function);
-  // });
-  //
-  //
-  // it('should construct with default query methods', () => {
-  //   const model = Model.create('Test');
-  //
-  //   model.should.have.property('findOneByField').and.be.an.instanceOf(Function);
-  //   model.should.have.property('findByField').and.be.an.instanceOf(Function);
-  //   model.should.have.property('find').and.be.an.instanceOf(Function);
-  //   model.should.have.property('findOne').and.be.an.instanceOf(Function);
-  //   model.should.have.property('createOrUpdate').and.be.an.instanceOf(Function);
-  //   model.should.have.property('native').and.be.an.instanceOf(Function);
-  //   model.should.have.property('count').and.be.an.instanceOf(Function);
-  //   model.should.have.property('updateOne').and.be.an.instanceOf(Function);
-  //   model.should.have.property('update').and.be.an.instanceOf(Function);
-  //   model.should.have.property('create').and.be.an.instanceOf(Function);
-  //   model.should.have.property('destroy').and.be.an.instanceOf(Function);
-  //   model.should.have.property('findOrCreate').and.be.an.instanceOf(Function);
-  //   model.should.have.property('subscribe').and.be.an.instanceOf(Function);
-  // });
-  //
-  // it('should construct with lifecycle methods', () => {
-  //   // TODO
-  //   return Promise.resolve();
-  // });
 
 });
