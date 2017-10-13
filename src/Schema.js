@@ -21,6 +21,10 @@ class Schema extends SchemaInternal {
     return this._schema.identity;
   }
 
+  get limit() {
+    return this._schema.limit;
+  }
+
   get autoId() {
     return this._schema.autoId;
   }
