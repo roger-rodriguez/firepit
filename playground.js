@@ -41,10 +41,11 @@ const User = firebase.firepit().model('User');
 
 User
   // .find({ name: 'elliot' })
-  .findOneByName('elliot')
+  // .findOneByName('elliot')
   // .findByNoob(true)
-  .where({ age: 12 })
+  // .where({ age: 12 })
   // .findOne('dJbQltnAsv4wKuJTdxZU')
+  .findOneById('dJbQltnAsv4wKuJTdxZU')
   // .sort('age', 'asc')
   // .sort({ age: 1 })
   // .sort({ age: -1 })
