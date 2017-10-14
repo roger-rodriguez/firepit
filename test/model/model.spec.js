@@ -95,6 +95,7 @@ describe('Model', () => {
     const model = new Model(testAppName, 'Test');
 
     model.should.have.property('findOneByField').and.be.an.instanceOf(Function);
+    model.should.have.property('findOneById').and.be.an.instanceOf(Function);
     model.should.have.property('findByField').and.be.an.instanceOf(Function);
     model.should.have.property('find').and.be.an.instanceOf(Function);
     model.should.have.property('findOne').and.be.an.instanceOf(Function);
