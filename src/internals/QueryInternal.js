@@ -119,18 +119,17 @@ class QueryInternal {
 
   // todo 1) just a temporary response handler / convertor for now, move out and support
   // todo ^ -- for everything including realtime.
-  // TODO 2) no ids showing currently
   _handleQueryResponse(response) {
     if (this._docId) {
       return this._resolve(response ? response.data() : null);
     }
 
     if (this._isFindOne) {
-      return this._resolve(response.docs[0] ? response.docs[0].data() : null);
+      return this._resolve(response.docs[0] ? { id: response.docs[0].id, ...response.docs[0].data() } : null);
     }
 
     const out = [];
-    response.forEach((snap) => out.push(snap.data()));
+    response.forEach((snap) => out.push({ id: snap.id, ...snap.data() }));
 
     Object.defineProperties(out, {
       empty: {
