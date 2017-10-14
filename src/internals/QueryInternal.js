@@ -121,7 +121,7 @@ class QueryInternal {
   // todo ^ -- for everything including realtime.
   _handleQueryResponse(response) {
     if (this._docId) {
-      return this._resolve(response ? response.data() : null);
+      return this._resolve(response ? { id: response.id, ...response.data() } : null);
     }
 
     if (this._isFindOne) {
