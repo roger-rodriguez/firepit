@@ -85,6 +85,36 @@ describe('minLength/maxLength Attribute Property', () => {
     }).should.throw() // TODO error
   });
 
+  it('should throw if minLength less than 0', () => {
+    testApp.config = {
+      attributes: {
+        'a1': {
+          type: 'string',
+          minLength: -1,
+        },
+      }
+    };
+
+    (function () {
+      const model = new Model(testAppName, 'Test');
+    }).should.throw() // TODO error
+  });
+
+  it('should throw if maxLength less than 0', () => {
+    testApp.config = {
+      attributes: {
+        'a1': {
+          type: 'string',
+          minLength: -1,
+        },
+      }
+    };
+
+    (function () {
+      const model = new Model(testAppName, 'Test');
+    }).should.throw() // TODO error
+  });
+
 
   it('should throw if minLength is equal to or greater than maxLength', () => {
     testApp.config = {
