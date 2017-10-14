@@ -16,9 +16,9 @@ const validatorForType = {
 
 const sorts = {
   '1': 'asc',
-  '-1': 'asc',
-  'asc': '1',
-  'desc': '-1',
+  '-1': 'desc',
+  'asc': 'asc',
+  'desc': 'desc',
 };
 
 // Source: https://cloud.google.com/bigquery/docs/reference/standard-sql/lexical
@@ -32,6 +32,7 @@ const REGEXP_FIELD_PATH = new RegExp(
 );
 
 module.exports = {
+  sortMap: sorts,
   /**
    *
    * @param value
