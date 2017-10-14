@@ -26,6 +26,18 @@ const alsoReturnsTheModel = firebase.firepit().createModel('User', {
     name: {
       type: 'string',
     },
+    transactionId: {
+      type: 'string',
+      defaultsTo() {
+        return Math.random().toString();
+      }
+    },
+    fieldMadeFromOtherFields: {
+      type: 'string',
+      defaultsTo(otherFields) {
+        return otherFields.a + otherFields.c + otherFields.z;
+      }
+    },
     noob: {
       type: 'boolean',
     },
