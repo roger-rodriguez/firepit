@@ -4,8 +4,14 @@ const { isValidFirestoreField, isValidSort } = require('./validate/shared');
 const QueryInternal = require('./internals/QueryInternal');
 
 class Query extends QueryInternal {
-  constructor(model, fieldNameOrCriteria, fieldValue) {
-    super(model, fieldNameOrCriteria, fieldValue);
+  /**
+   *
+   * @param model {Model}
+   * @param filterOrString {Object|String}
+   * @param possibleValue {undefined|any}
+   */
+  constructor(model, filterOrString, possibleValue) {
+    super(model, filterOrString, possibleValue);
   }
 
   limit(val) {
