@@ -42,6 +42,7 @@ const User = firebase.firepit().model('User');
 User
   // .find({ name: 'elliot' })
   .findOneByName('elliot')
+  // .findByNoob(true)
   .where({ age: 12 })
   // .findOne('dJbQltnAsv4wKuJTdxZU')
   // .sort('age', 'asc')
