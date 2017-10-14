@@ -22,6 +22,10 @@ module.exports.isObject = function isObject(value) {
   return (value && typeof value === 'object' && !Array.isArray(value) && value !== null);
 };
 
+module.exports.isArray = function isArray(value) {
+  return Array.isArray(value);
+};
+
 module.exports.isFloat = function isFloat(value) {
   return Number(value) === value && value % 1 !== 0;
 };
@@ -58,5 +62,4 @@ module.exports.toFirstUpper = function toFirstUpper(string) {
 
 module.exports.mergeDeep = deeps.merge;
 module.exports.hasOwnProp = (target, prop) => Object.hasOwnProperty.call(target, prop);
-
 
