@@ -5,7 +5,7 @@ const helper = require('./helper');
 const testAppName = 'TestApp';
 let testApp;
 
-describe('String Type Attributes', () => {
+describe('Float Type Attributes', () => {
 
   beforeEach(() => {
     testApp = internals.createInstance({
@@ -13,64 +13,62 @@ describe('String Type Attributes', () => {
     });
   });
 
-  // TODO What to do about this? Json is still a string
-  // it('should throw if defaultsTo is a json', () => {
-  //   testApp.config = helper('string', 'json');
-  //   (function () {
-  //     const model = new Model(testAppName, 'Test');
-  //   }).should.throw() // TODO error
-  // });
+  it('should throw if defaultsTo is a json', () => {
+    testApp.config = helper('float', 'json');
+    (function () {
+      const model = new Model(testAppName, 'Test');
+    }).should.throw() // TODO error
+  });
 
   it('should throw if defaultsTo is a null', () => {
-    testApp.config = helper('string', 'null');
+    testApp.config = helper('float', 'null');
     (function () {
       const model = new Model(testAppName, 'Test');
     }).should.throw() // TODO error
   });
 
   it('should throw if defaultsTo is a array', () => {
-    testApp.config = helper('string', 'array');
+    testApp.config = helper('float', 'array');
     (function () {
       const model = new Model(testAppName, 'Test');
     }).should.throw() // TODO error
   });
 
   it('should throw if defaultsTo is a object', () => {
-    testApp.config = helper('string', 'object');
+    testApp.config = helper('float', 'object');
     (function () {
       const model = new Model(testAppName, 'Test');
     }).should.throw() // TODO error
   });
 
-  it('should throw if defaultsTo is a float', () => {
-    testApp.config = helper('string', 'float');
-    (function () {
-      const model = new Model(testAppName, 'Test');
-    }).should.throw() // TODO error
-  });
-
-  it('should not throw if defaultsTo is a string', () => {
-    testApp.config = helper('string', 'string');
+  it('should not throw if defaultsTo is a float', () => {
+    testApp.config = helper('float', 'float');
     const model = new Model(testAppName, 'Test');
   });
 
-  it('should throw if defaultsTo is a integer', () => {
-    testApp.config = helper('string', 'integer');
+  it('should throw if defaultsTo is a string', () => {
+    testApp.config = helper('float', 'string');
     (function () {
       const model = new Model(testAppName, 'Test');
     }).should.throw() // TODO error
+  });
 
+  it('should throw if defaultsTo is a integer', () => {
+    testApp.config = helper('float', 'integer');
+    (function () {
+      const model = new Model(testAppName, 'Test');
+    }).should.throw() // TODO error
   });
 
   it('should throw if defaultsTo is a boolean', () => {
-    testApp.config = helper('string', 'boolean');
+    testApp.config = helper('float', 'boolean');
     (function () {
       const model = new Model(testAppName, 'Test');
     }).should.throw() // TODO error
   });
 
   it('should throw if defaultsTo is a datetime', () => {
-    testApp.config = helper('string', 'datetime');
+    testApp.config = helper('float', 'datetime');
     (function () {
       const model = new Model(testAppName, 'Test');
     }).should.throw() // TODO error

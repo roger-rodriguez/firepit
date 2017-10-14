@@ -42,6 +42,16 @@ module.exports.isString = function isString(value) {
   return typeof value === 'string';
 };
 
+module.exports.isJSON = function isString(value) {
+  if (typeof value !== 'string') return false;
+  try {
+    JSON.parse(value);
+    return true;
+  } catch(e) {
+    return false;
+  }
+};
+
 module.exports.isInteger = function isInteger(value) {
   return value === parseInt(value, 10);
 };

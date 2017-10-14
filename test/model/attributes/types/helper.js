@@ -56,7 +56,7 @@ function typeMap(type, check) {
         defaultsTo: false,
       },
     },
-    date: {
+    datetime: {
       'a1': {
         type,
         defaultsTo: new Date(),

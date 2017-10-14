@@ -1,9 +1,9 @@
 const { UTILS } = require('./../internals');
-const { isBoolean, isInteger, isArray, isNull, isString, isDate, isFloat, isObject } = UTILS;
+const { isBoolean, isInteger, isArray, isNull, isString, isDate, isFloat, isObject, isJSON } = UTILS;
 
 const validatorForType = {
   any: () => true,
-  json: isString,
+  json: isJSON,
   null: isNull,
   float: isFloat,
   array: isArray,
