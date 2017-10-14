@@ -45,7 +45,7 @@ class Query extends QueryInternal {
   }
 
   limit(val) {
-    if (!isInteger(value)) throw new Error('limit must be an integer'); // todo
+    if (!isInteger(val)) throw new Error('limit must be an integer'); // todo
     if (val < 0) throw new Error('limit should not be less than 0'); // todo
     this._limit = val;
     return this;
@@ -56,11 +56,6 @@ class Query extends QueryInternal {
     if (val < 0) throw new Error('page should not be less than 0'); // todo
     this._page = val;
     return this;
-  }
-
-
-  populate(association, subCriteria) {
-    // todo
   }
 
   where(criteria) {
@@ -111,6 +106,8 @@ class Query extends QueryInternal {
    */
   then(fn) {
     this._promiseDeferred();
+    // transform output TODO move me
+    this.queryRef.get().then(this._handleQueryResponse.bind(this)).catch(this._reject);
     if (this._promise) return this._promise.then.bind(this._promise)(fn);
     return undefined; // will never get here - just to keep flow happy
   }
@@ -121,6 +118,8 @@ class Query extends QueryInternal {
    */
   catch(fn) {
     this._promiseDeferred();
+    // todo transform output
+    this.queryRef.get().then().catch(this._reject);
     if (this._promise) return this._promise.catch.bind(this._promise)(fn);
     return undefined; // will never get here - just to keep flow happy
   }
