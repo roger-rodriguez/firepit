@@ -3,42 +3,6 @@ const { isInteger, isString, isObject, mergeDeep } = UTILS;
 const { isValidFirestoreField, isValidSort } = require('./validate/shared');
 const QueryInternal = require('./internals/QueryInternal');
 
-/*
-    return this.collectionRef.where(field, '==', value).limit(1).get().then((querySnapshot) => {
-      return querySnapshot.docs[0] ? querySnapshot.docs[0].data() : undefined;
-    });
-
- */
-
-/*
-    return this.collectionRef.where(field, '==', value).get().then((querySnapshot) => {
-      const out = [];
-      // Object.defineProperty(out, 'bar', {
-      //   enumerable: false,
-      //   value: 'egshdshdh !!!hdfh ',
-      // });
-      querySnapshot.forEach((snap) => out.push(snap.data()));
-      return out;
-    });
- */
-
-
-/*
-    let query = this.collectionRef;
-
-    const fields = Object.keys(filter);
-
-    for (let i = 0, len = fields.length; i < len; i++) {
-      const field = fields[i];
-      const value = filter[field];
-      query = query.where(field, '==', value);
-    }
-
-    return query.limit(1).get().then((querySnapshot) => {
-      return querySnapshot.docs[0] ? querySnapshot.docs[0].data() : undefined;
-    });
- */
-
 class Query extends QueryInternal {
   constructor(model, fieldNameOrCriteria, fieldValue) {
     super(model, fieldNameOrCriteria, fieldValue);
