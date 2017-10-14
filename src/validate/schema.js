@@ -1,11 +1,23 @@
 const { TYPES, UTILS } = require('./../internals');
 
 const { validateValueForType, isValidFirestoreField } = require('./shared');
-const { hasOwnProp, isInteger, isBoolean, isPrimitive, typeOf } = UTILS;
+const { hasOwnProp, isInteger, isString, isFunction, isBoolean, isPrimitive, typeOf } = UTILS;
 
 module.exports.validateType = function validateType(key, modelName, attribute) {
   if (!TYPES[attribute.type]) {
     throw new Error(`Type ${attribute.type} aint valid`); // TODO
+  }
+};
+
+module.exports.validateFieldName = function validateFieldName(key, modelName, attribute) {
+  if (!isString(attribute.fieldName)) {
+    throw new Error('fieldName must be a string');
+  }
+
+  const valid = isValidFirestoreField(attribute.fieldName);
+
+  if (!valid) {
+    throw new Error(`Field ${attribute.fieldName} is not a valid Cloud Firestore field name`); // TODO
   }
 };
 
@@ -55,14 +67,6 @@ module.exports.validateRequired = function validateRequired(key, modelName, attr
   }
 };
 
-module.exports.validateFieldName = function validateFieldName(key, modelName, attribute) {
-  const valid = isValidFirestoreField(attribute.fieldName);
-
-  if (!valid) {
-    throw new Error(`Field ${attribute.fieldName} is not a valid Cloud Firestore field name`); // TODO
-  }
-};
-
 const isValidLength = module.exports.isValidLength = function isValidLength(key, value) {
   if (!isInteger(value)) {
     throw new Error(`${type} must be an integer`); // TODO
@@ -89,6 +93,27 @@ module.exports.validateLength = function validateLength(key, modelName, attribut
       if (attribute.minLength >= attribute.maxLength) {
         throw new Error(`minLength has to be less than maxLength`); // TODO
       }
+    }
+
+    if (hasOwnProp(attribute, 'defaultsTo')) {
+      if (hasOwnProp(attribute, 'minLength') && attribute.defaultsTo.length < attribute.minLength) {
+        throw new Error('defaultsTo value cannot be less than the minLength');
+      }
+      if (hasOwnProp(attribute, 'maxLength') && attribute.defaultsTo.length > attribute.maxLength) {
+        throw new Error('defaultsTo value cannot be less than the minLength');
+      }
+    }
+  }
+};
+
+module.exports.validateValidate = function validateValidate(key, modelName, attribute) {
+  if (hasOwnProp(attribute, 'validate')) {
+    if (!isFunction(attribute.validate)) {
+      throw new Error(`validate has to be function`); // TODO
+    }
+
+    if (hasOwnProp(attribute, 'defaultsTo')) {
+      attribute.validate(attribute.defaultsTo);
     }
   }
 };
