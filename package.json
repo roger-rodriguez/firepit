@@ -4,7 +4,7 @@
   "description": "",
   "main": "src/index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "nyc mocha"
   },
   "author": "",
   "license": "Apache-2.0",
@@ -13,7 +13,9 @@
     "firebase-admin": "^5.4.2"
   },
   "devDependencies": {
+    "istanbul": "^0.4.5",
     "mocha": "^4.0.1",
+    "nyc": "^11.2.1",
     "should": "^13.1.2"
   }
 }
