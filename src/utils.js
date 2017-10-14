@@ -38,6 +38,10 @@ module.exports.isBoolean = function isBoolean(value) {
   return typeof value === 'boolean';
 };
 
+module.exports.isUndefined = function isUndefined(value) {
+  return typeof value === 'undefined';
+};
+
 module.exports.isString = function isString(value) {
   return typeof value === 'string';
 };
@@ -71,5 +75,6 @@ module.exports.toFirstUpper = function toFirstUpper(string) {
 
 
 module.exports.mergeDeep = deeps.merge;
+module.exports.flatten = deeps.flatten;
 module.exports.hasOwnProp = (target, prop) => Object.hasOwnProperty.call(target, prop);
 
