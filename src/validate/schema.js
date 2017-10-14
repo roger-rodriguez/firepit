@@ -1,7 +1,7 @@
 const { TYPES, UTILS } = require('./../internals');
 
 const { validateValueForType, isValidFirestoreField } = require('./shared');
-const { hasOwnProp, isInteger, typeOf } = UTILS;
+const { hasOwnProp, isInteger, isPrimitive, typeOf } = UTILS;
 
 module.exports = {
   /**
@@ -42,6 +42,10 @@ module.exports = {
         throw new Error(`Enum prop must be an array`); // TODO
       }
 
+      if (attribute.enum.length === 0) {
+        throw new Error(`Enum prop must be an array and contain items`); // TODO
+      }
+
       if (attribute.type !== 'any') {
         for (let i = 0, len = attribute.enum.length; i < len; i++) {
           const value = attribute.enum[i];
@@ -52,7 +56,7 @@ module.exports = {
       } else {
         for (let i = 0, len = attribute.enum.length; i < len; i++) {
           const value = attribute.enum[i];
-          if (typeOf(value) !== 'string' || typeOf(value) !== 'number') {
+          if (!isPrimitive(value)) {
             throw new Error(`Enum contains value which isnt a primitive value`); // TODO
           }
         }

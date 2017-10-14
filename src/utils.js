@@ -8,7 +8,7 @@ module.exports = {};
  *   TYPES
  */
 
-module.exports.typeOf = function typeOf(value) {
+const typeOf = module.exports.typeOf = function typeOf(value) {
   if (value === null) return 'null';
   if (Array.isArray(value)) return 'array';
   return typeof value;
