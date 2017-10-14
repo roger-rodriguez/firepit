@@ -75,6 +75,15 @@ class Model extends ModelInternal {
     return new Query(this, filterOrString).isFindOne(true);
   }
 
+  /**
+   *
+   * @param id
+   * @return {*}
+   */
+  findOneById(id) {
+    return new Query(this, id).isFindOne(true);
+  }
+
   findOrCreate(filterOrString, document) {
 
   }
