@@ -1,7 +1,7 @@
 const { TYPES, UTILS } = require('./../internals');
 
 const { validateValueForType, isValidFirestoreField } = require('./shared');
-const { hasOwnProp, isInteger, isPrimitive, typeOf } = UTILS;
+const { hasOwnProp, isInteger, isBoolean, isPrimitive, typeOf } = UTILS;
 
 module.exports = {
   /**
