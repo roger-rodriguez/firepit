@@ -116,6 +116,53 @@ describe('minLength/maxLength Attribute Property', () => {
     const model = new Model(testAppName, 'Test');
   });
 
+  it('should throw if defaultsTo value is less than minLength', () => {
+    testApp.config = {
+      attributes: {
+        'a1': {
+          type: 'string',
+          minLength: 4,
+          defaultsTo: 'abc',
+        },
+      }
+    };
+
+    (function () {
+      const model = new Model(testAppName, 'Test');
+    }).should.throw() // TODO error
+  });
+
+  it('should throw if defaultsTo value is greater than minLength', () => {
+    testApp.config = {
+      attributes: {
+        'a1': {
+          type: 'string',
+          maxLength: 4,
+          defaultsTo: 'abcde',
+        },
+      }
+    };
+
+    (function () {
+      const model = new Model(testAppName, 'Test');
+    }).should.throw() // TODO error
+  });
+
+  it('should not throw if defaultsTo value is within minLength & maxLength', () => {
+    testApp.config = {
+      attributes: {
+        'a1': {
+          type: 'string',
+          minLength: 1,
+          maxLength: 3,
+          defaultsTo: 'ab',
+        },
+      }
+    };
+
+    const model = new Model(testAppName, 'Test');
+  });
+
   afterEach(() => {
     internals.deleteInstance(testAppName);
   });

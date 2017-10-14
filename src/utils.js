@@ -60,6 +60,10 @@ module.exports.isNull = function isNull(value) {
   return value === null;
 };
 
+module.exports.isFunction = function isFunction(value) {
+  return typeof value === 'function';
+};
+
 /*
  *    MISC
  */
