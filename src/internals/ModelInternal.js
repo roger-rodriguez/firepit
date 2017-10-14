@@ -1,5 +1,5 @@
 const Schema = require('../Schema');
-const { APPS, UTILS } = require('./');
+const { UTILS } = require('./');
 const { toFirstUpper } = UTILS;
 /**
  *
@@ -24,10 +24,6 @@ class BaseModel {
     this.modelName = modelName;
     this.schema = new Schema(appName, modelName, schema);
     attachMagicMethods(this);
-  }
-
-  get app() {
-    return APPS[this.appName].app
   }
 }
 

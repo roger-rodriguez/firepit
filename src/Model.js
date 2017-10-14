@@ -1,3 +1,5 @@
+const Query = require('./Query');
+const { APPS } = require('./internals');
 const ModelInternal = require('./internals/ModelInternal');
 
 class Model extends ModelInternal {
@@ -11,66 +13,70 @@ class Model extends ModelInternal {
     super(appName, modelName, schemaObj);
   }
 
+  /**
+   * Returns the firebase app instance.
+   * @return {Object}
+   */
+  get app() {
+    return APPS[this.appName].app
+  }
+
+  /**
+   * Returns the base CollectionReference for this model
+   * @return {*}
+   */
   get collectionRef() {
     return this.app.firestore().collection(this.collectionName);
   }
 
+  /**
+   * Returns the name of the firestore collection for this model
+   * @return {*}
+   */
   get collectionName() {
     return this.schema.collectionName;
   }
 
-  // TODO methods below need cleaning / api thought through
+  /**
+   *
+   * @param field
+   * @param value
+   * @return {*}
+   */
   findOneByField(field, value) {
-    return this.collectionRef.where(field, '==', value).limit(1).get().then((querySnapshot) => {
-      return querySnapshot.docs[0] ? querySnapshot.docs[0].data() : undefined;
-    });
+    return new Query(this, field, value).isFindOne(true);
   }
 
+  /**
+   *
+   * @param field
+   * @param value
+   * @return {Query}
+   */
   findByField(field, value) {
-    return this.collectionRef.where(field, '==', value).get().then((querySnapshot) => {
-      const out = [];
-      // Object.defineProperty(out, 'bar', {
-      //   enumerable: false,
-      //   value: 'egshdshdh !!!hdfh ',
-      // });
-      querySnapshot.forEach((snap) => out.push(snap.data()));
-      return out;
-    });
+    return new Query(this, field, value);
   }
 
+  /**
+   *
+   * @param filter
+   * @return {Query}
+   */
   find(filter = {}) {
-    const fields = Object.keys(filter);
-
-    let query = this.collectionRef;
-
-    for (let i = 0, len = fields.length; i < len; i++) {
-      const field = fields[i];
-      const value = filter[field];
-      query = query.where(field, '==', value);
-    }
-
-    return query.get().then((querySnapshot) => {
-      const out = [];
-      querySnapshot.forEach((snap) => out.push(snap.data()));
-      return out;
-    });
+    return new Query(this, filter);
   }
 
-  findOne(filter = {}) {
+  /**
+   *
+   * @param filterOrString
+   * @return {*}
+   */
+  findOne(filterOrString) {
+    return new Query(this, filterOrString).isFindOne(true);
+  }
 
-    let query = this.collectionRef;
+  findOrCreate(filterOrString, document) {
 
-    const fields = Object.keys(filter);
-
-    for (let i = 0, len = fields.length; i < len; i++) {
-      const field = fields[i];
-      const value = filter[field];
-      query = query.where(field, '==', value);
-    }
-
-    return query.limit(1).get().then((querySnapshot) => {
-      return querySnapshot.docs[0] ? querySnapshot.docs[0].data() : undefined;
-    });
   }
 
   createOrUpdate() {
@@ -94,8 +100,7 @@ class Model extends ModelInternal {
   destroy() {
   }
 
-  findOrCreate() {
-  }
+
 
   subscribe() {
   }
