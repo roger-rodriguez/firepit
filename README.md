@@ -48,6 +48,7 @@ User
   });
 ```
 
+# Transaction Example
 
 ## Increment a value new way
 
@@ -97,8 +98,8 @@ City
       population: 1,
     },
   })
-  .then((postDocument) => {
-    console.log(postDocument.likes);
+  .then((cityDocument) => {
+    console.log(cityDocument.population);
   });
 ```
 
