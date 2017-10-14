@@ -1,4 +1,5 @@
-const { APPS, DEFAULTS, UTILS } = require('./');
+const { UTILS } = require('./');
+const { sortMap } = require('./../validate/shared');
 
 const {
   flatten, isString, isUndefined, isObject, isPrimitive,
@@ -51,6 +52,45 @@ class QueryInternal {
   }
 
   /**
+   *
+   * @return {*}
+   */
+  get queryRef() {
+    let ref = this._model.collectionRef;
+
+    if (this._docId) {
+      return ref.doc(this._docId);
+    }
+
+    // apply limits
+    if (this._isFindOne) ref = ref.limit(1);
+    else if (this._limit) ref = ref.limit(this._limit);
+
+    // apply conditions
+    const fields = Object.entries(this.criteria);
+    for (let i = 0, len = fields.length; i < len; i++) {
+      const field = fields[i][0];
+      const value = fields[i][1];
+      if (!field.startsWith('$')) { // skip modifiers such as $inc
+        // todo range filter support >= <=
+        ref = ref.where(field, '==', value);
+      }
+    }
+
+    // apply sorting
+    if (this._sort) {
+      const orders = Object.entries(this._sort);
+      for (let i = 0, len = orders.length; i < len; i++) {
+        const field = orders[i][0];
+        const direction = orders[i][1];
+        ref = ref.orderBy(field, sortMap[direction]);
+      }
+    }
+
+    return ref;
+  }
+
+  /**
    * Validates criteria fields and values
    */
   validateCriteria() {
@@ -75,6 +115,39 @@ class QueryInternal {
     this._isFindOne = bool;
     if (this._isFindOne) this._limit = 1;
     return this;
+  }
+
+  // todo 1) just a temporary response handler / convertor for now, move out and support
+  // todo ^ -- for everything including realtime.
+  // TODO 2) no ids showing currently
+  _handleQueryResponse(response) {
+    if (this._docId) {
+      return this._resolve(response ? response.data() : null);
+    }
+
+    if (this._isFindOne) {
+      return this._resolve(response.docs[0] ? response.docs[0].data() : null);
+    }
+
+    const out = [];
+    response.forEach((snap) => out.push(snap.data()));
+
+    Object.defineProperties(out, {
+      empty: {
+        enumerable: false,
+        value: response.empty,
+      },
+      query: {
+        enumerable: false,
+        value: this.queryRef,
+      },
+      changes: {
+        enumerable: false,
+        value: response.docChanges,
+      },
+    });
+
+    return this._resolve(out);
   }
 
   /**
