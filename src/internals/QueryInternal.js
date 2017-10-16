@@ -19,6 +19,7 @@ class QueryInternal {
     }
 
     this._page = 1;
+    this._select = [];
     this._sort = null;
     this._docId = null;
     this._model = model;
@@ -76,10 +77,10 @@ class QueryInternal {
       const value = fields[i][1];
       // skip transaction modifiers - these are always root level ans start with $
       if (!field.startsWith('$')) {
-        if (field.endsWith('$gt'))  ref = ref.where(field.replace('.$gt', ''), '>', value);
-        else if (field.endsWith('$gte'))  ref = ref.where(field.replace('.$gte', ''), '>=', value);
-        else if (field.endsWith('$lt'))  ref = ref.where(field.replace('.$lt', ''), '<', value);
-        else if (field.endsWith('$lte'))  ref = ref.where(field.replace('.$lte', ''), '<=', value);
+        if (field.endsWith('$gt')) ref = ref.where(field.replace('.$gt', ''), '>', value);
+        else if (field.endsWith('$gte')) ref = ref.where(field.replace('.$gte', ''), '>=', value);
+        else if (field.endsWith('$lt')) ref = ref.where(field.replace('.$lt', ''), '<', value);
+        else if (field.endsWith('$lte')) ref = ref.where(field.replace('.$lte', ''), '<=', value);
         else {
           ref = ref.where(field, '==', value);
         }
@@ -94,6 +95,11 @@ class QueryInternal {
         const direction = orders[i][1];
         ref = ref.orderBy(field, sortMap[direction]);
       }
+    }
+
+    // apply projections
+    if (this._select && this._select.length) {
+      ref = ref.select(...this._select);
     }
 
     return ref;
