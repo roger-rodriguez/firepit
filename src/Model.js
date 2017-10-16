@@ -153,6 +153,7 @@ class Model extends ModelInternal {
 
     return this.nativeCollection.doc(id)
       .set(this.validate(obj))
+      // todo find should map custom fieldNames back to the correct attribute names
       .then(() => this.findOneById(id));
   }
 
