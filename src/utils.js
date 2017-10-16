@@ -1,7 +1,6 @@
 const deeps = require('deeps');
 
 
-
 module.exports = {};
 
 /**
@@ -24,6 +23,15 @@ module.exports.isObject = function isObject(value) {
 
 module.exports.isArray = function isArray(value) {
   return Array.isArray(value);
+};
+
+module.exports.isArrayOfStrings = function isArray(value) {
+  if (!Array.isArray(value)) return false;
+  for (let i = 0, len = value.length; i < len; i++) {
+    if (typeof value[i] !== 'string') return false;
+  }
+
+  return true;
 };
 
 module.exports.isFloat = function isFloat(value) {
@@ -51,7 +59,7 @@ module.exports.isJSON = function isString(value) {
   try {
     JSON.parse(value);
     return true;
-  } catch(e) {
+  } catch (e) {
     return false;
   }
 };
@@ -75,7 +83,6 @@ module.exports.isFunction = function isFunction(value) {
 module.exports.toFirstUpper = function toFirstUpper(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 };
-
 
 
 module.exports.mergeDeep = deeps.merge;
