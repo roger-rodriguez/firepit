@@ -49,6 +49,7 @@ User
       $lte: 55,
     },
   })
+  .select(['age'])
   // .findOne('dJbQltnAsv4wKuJTdxZU')
   // .findOneById('dJbQltnAsv4wKuJTdxZU')
   // .sort('age', 'asc')
