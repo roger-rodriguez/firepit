@@ -100,6 +100,9 @@ class QueryInternal {
     // apply projections
     if (this._select && this._select.length) {
       ref = ref.select(...this._select);
+    } else {
+      // TODO auto generate selections of fields in attributes if schema set to true
+      // TODO to improve performance / reduce response size
     }
 
     return ref;
