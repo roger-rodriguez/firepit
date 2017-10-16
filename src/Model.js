@@ -150,7 +150,7 @@ class Model extends ModelInternal {
    */
   create(obj) {
     const id = obj.id || generateDocumentId();
-
+    // todo promise.reject failed validation rather than throw? maybe this.validate().then.doc().set()
     return this.nativeCollection.doc(id)
       .set(this.validate(obj))
       // todo find should map custom fieldNames back to the correct attribute names
