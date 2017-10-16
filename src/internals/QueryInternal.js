@@ -18,7 +18,7 @@ class QueryInternal {
       model.schema._validateAssociations();
     }
 
-    // this._page = 1;
+    this._page = 1;
     this._sort = null;
     this._docId = null;
     this._model = model;

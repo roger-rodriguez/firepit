@@ -21,12 +21,12 @@ class Query extends QueryInternal {
     return this;
   }
 
-  // page(val) {
-  //   if (!isInteger(value)) throw new Error('page must be an integer'); // todo
-  //   if (val < 0) throw new Error('page should not be less than 0'); // todo
-  //   this._page = val;
-  //   return this;
-  // }
+  page(val) {
+    if (!isInteger(val)) throw new Error('page must be an integer'); // todo
+    if (val < 0) throw new Error('page should not be less than 0'); // todo
+    this._page = val;
+    return this;
+  }
 
   where(criteria) {
     if (!isObject(criteria)) throw new Error('criteria must be an object'); // todo
