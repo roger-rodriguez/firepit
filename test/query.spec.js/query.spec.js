@@ -66,7 +66,7 @@ describe('Query', () => {
 
   it('should throw if possibleValue is provided but criteria is not a string', () => {
     (() => {
-      const query = new Query(modelInstance);
+      const query = new Query(modelInstance, {}, 'foobar');
     }).should.throw(); // todo
   });
 
