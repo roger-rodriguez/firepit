@@ -26,6 +26,7 @@ describe('Query', () => {
 
     // methods
     query.should.have.property('isFindOne').and.be.instanceOf(Function);
+    query.should.have.property('select').and.be.instanceOf(Function);
     query.should.have.property('limit').and.be.instanceOf(Function);
     query.should.have.property('where').and.be.instanceOf(Function);
     query.should.have.property('sort').and.be.instanceOf(Function);
@@ -37,6 +38,7 @@ describe('Query', () => {
     const query = new Query(modelInstance, {
       foo: 'bar',
     });
+    query.should.have.property('_select', []);
     query.should.have.property('_page', 1);
     query.should.have.property('_sort', null);
     query.should.have.property('_docId', null);
@@ -50,7 +52,7 @@ describe('Query', () => {
     query.should.have.property('_limit', modelInstance.schema.limit);
   });
 
-  it('should construct with empty string criteria', () => {
+  it('should construct with string criteria', () => {
     const query = new Query(modelInstance, 'foobar');
     query.should.have.property('_page', 1);
     query.should.have.property('_sort', null);

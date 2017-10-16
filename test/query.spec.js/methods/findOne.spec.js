@@ -18,6 +18,7 @@ describe('Query findOne method', () => {
   it('should set internal flag to true when called', () => {
     const query = new Query(modelInstance, {}).isFindOne('foobar');
     query.should.have.property('_isFindOne', true);
+    query.should.have.property('_limit', 1);
   });
 
   afterEach(() => {
