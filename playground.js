@@ -40,18 +40,23 @@ firebase.firepit().initialize();
 const User = firebase.firepit().model('User');
 
 User
-  // .find({ name: 'elliot' })
-  // .findOneByName('elliot')
+// .find({ name: 'elliot' })
+// .findOneByName('elliot')
   .findByNoob(true)
-  // .where({ age: 12 })
+  .where({
+    age: {
+      $gte: 12,
+      $lte: 55,
+    },
+  })
   // .findOne('dJbQltnAsv4wKuJTdxZU')
   // .findOneById('dJbQltnAsv4wKuJTdxZU')
   // .sort('age', 'asc')
   // .sort({ age: 1 })
   // .sort({ age: -1 })
   // .sort('age', 'desc')
-  .limit(1)
-  .page(1)
+  // .limit(1)
+  // .page(1)
   .then((result) => {
     console.dir(result);
   })
