@@ -1,5 +1,6 @@
 const deeps = require('deeps');
 
+const AUTO_ID_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
 module.exports = {};
 
@@ -84,6 +85,20 @@ module.exports.toFirstUpper = function toFirstUpper(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 };
 
+
+/**
+ * Generate a firestore auto id for use with collection/document .add()
+ * @return {string}
+ */
+module.exports.generateDocumentId = function generateDocumentId() {
+  let autoId = '';
+
+  for (let i = 0; i < 20; i++) {
+    autoId += AUTO_ID_CHARS.charAt(Math.floor(Math.random() * AUTO_ID_CHARS.length));
+  }
+
+  return autoId;
+};
 
 module.exports.mergeDeep = deeps.merge;
 module.exports.flatten = deeps.flatten;
