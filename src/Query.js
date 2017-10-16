@@ -1,5 +1,5 @@
 const { UTILS } = require('./internals');
-const { isInteger, isString, isObject, mergeDeep } = UTILS;
+const { isInteger, isString, isObject, mergeDeep, isArrayOfStrings } = UTILS;
 const { isValidFirestoreField, isValidSort } = require('./validate/shared');
 const QueryInternal = require('./internals/QueryInternal');
 
@@ -14,6 +14,11 @@ class Query extends QueryInternal {
     super(model, filterOrString, possibleValue);
   }
 
+  /**
+   *
+   * @param val
+   * @return {Query}
+   */
   limit(val) {
     if (!isInteger(val)) throw new Error('limit must be an integer'); // todo
     if (val < 0) throw new Error('limit should not be less than 0'); // todo
@@ -21,6 +26,11 @@ class Query extends QueryInternal {
     return this;
   }
 
+  /**
+   *
+   * @param val
+   * @return {Query}
+   */
   page(val) {
     if (!isInteger(val)) throw new Error('page must be an integer'); // todo
     if (val < 0) throw new Error('page should not be less than 0'); // todo
@@ -28,11 +38,28 @@ class Query extends QueryInternal {
     return this;
   }
 
+  /**
+   *
+   * @param criteria
+   * @return {Query}
+   */
   where(criteria) {
     if (!isObject(criteria)) throw new Error('criteria must be an object'); // todo
     mergeDeep(this._criteria, criteria);
     return this;
   }
+
+  /**
+   *
+   * @param arrayOfFields
+   * @return {Query}
+   */
+  select(arrayOfFields) {
+    if (!isArrayOfStrings(arrayOfFields)) throw new Error('field to select must be an array of strings'); // todo
+    this._select = arrayOfFields;
+    return this;
+  }
+
 
   /**
    *
