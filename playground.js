@@ -22,15 +22,19 @@ firepit.use(app, {
 
 
 const alsoReturnsTheModel = firebase.firepit().createModel('User', {
+  schema: false,
   attributes: {
     name: {
       type: 'string',
+      required: true,
     },
     noob: {
       type: 'boolean',
+      defaultsTo: false,
     },
     age: {
       type: 'integer',
+      required: true,
     },
   },
 });
@@ -39,29 +43,37 @@ firebase.firepit().initialize();
 
 const User = firebase.firepit().model('User');
 
-User
-// .find({ name: 'elliot' })
-// .findOneByName('elliot')
-  .findByNoob(true)
-  .where({
-    age: {
-      $gte: 12,
-      $lte: 55,
-    },
-  })
-  .select(['age'])
-  // .findOne('dJbQltnAsv4wKuJTdxZU')
-  // .findOneById('dJbQltnAsv4wKuJTdxZU')
-  // .sort('age', 'asc')
-  // .sort({ age: 1 })
-  // .sort({ age: -1 })
-  // .sort('age', 'desc')
-  // .limit(1)
-  // .page(1)
-  .then((result) => {
-    console.dir(result);
-  })
-  .catch((error) => {
-    console.error(error);
-  });
+User.create({
+  age: 69,
+  name: 'foobar'
+}).then((res) => {
+  debugger;
+});
+
+
+// User
+// // .find({ name: 'elliot' })
+// // .findOneByName('elliot')
+//   .findByNoob(true)
+//   .where({
+//     age: {
+//       $gte: 12,
+//       $lte: 55,
+//     },
+//   })
+//   .select(['age'])
+//   // .findOne('dJbQltnAsv4wKuJTdxZU')
+//   // .findOneById('dJbQltnAsv4wKuJTdxZU')
+//   // .sort('age', 'asc')
+//   // .sort({ age: 1 })
+//   // .sort({ age: -1 })
+//   // .sort('age', 'desc')
+//   // .limit(1)
+//   // .page(1)
+//   .then((result) => {
+//     console.dir(result);
+//   })
+//   .catch((error) => {
+//     console.error(error);
+//   });
 
