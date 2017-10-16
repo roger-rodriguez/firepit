@@ -112,7 +112,7 @@ class QueryInternal {
    * @return {QueryInternal}
    */
   isFindOne(bool) {
-    this._isFindOne = bool;
+    this._isFindOne = !!bool;
     if (this._isFindOne) this._limit = 1;
     return this;
   }
@@ -121,15 +121,28 @@ class QueryInternal {
   // todo ^ -- for everything including realtime.
   _handleQueryResponse(response) {
     if (this._docId) {
-      return this._resolve(response ? { id: response.id, ...response.data() } : null);
+      if (response) {
+        const res = { id: response.id };
+        return this._resolve(Object.assign(res, response.data()))
+      } else {
+        return this._resolve(null);
+      }
     }
 
     if (this._isFindOne) {
-      return this._resolve(response.docs[0] ? { id: response.docs[0].id, ...response.docs[0].data() } : null);
+      if (response.docs[0]) {
+        const res = { id: response.docs[0].id };
+        return this._resolve(Object.assign(res, response.docs[0].data()));
+      } else {
+        return this._resolve(null);
+      }
     }
 
     const out = [];
-    response.forEach((snap) => out.push({ id: snap.id, ...snap.data() }));
+    response.forEach((snap) => {
+      const res = { id: snap.id };
+      out.push(Object.assign(res, snap.data()));
+    });
 
     Object.defineProperties(out, {
       empty: {
