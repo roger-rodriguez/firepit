@@ -74,9 +74,15 @@ class QueryInternal {
     for (let i = 0, len = fields.length; i < len; i++) {
       const field = fields[i][0];
       const value = fields[i][1];
-      if (!field.startsWith('$')) { // skip modifiers such as $inc
-        // todo range filter support >= <=
-        ref = ref.where(field, '==', value);
+      // skip transaction modifiers - these are always root level ans start with $
+      if (!field.startsWith('$')) {
+        if (field.endsWith('$gt'))  ref = ref.where(field.replace('.$gt', ''), '>', value);
+        else if (field.endsWith('$gte'))  ref = ref.where(field.replace('.$gte', ''), '>=', value);
+        else if (field.endsWith('$lt'))  ref = ref.where(field.replace('.$lt', ''), '<', value);
+        else if (field.endsWith('$lte'))  ref = ref.where(field.replace('.$lte', ''), '<=', value);
+        else {
+          ref = ref.where(field, '==', value);
+        }
       }
     }
 
