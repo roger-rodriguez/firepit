@@ -66,6 +66,9 @@ class QueryInternal {
     if (this._isFindOne) ref = ref.limit(1);
     else if (this._limit) ref = ref.limit(this._limit);
 
+    // apply page/offset
+    if (this._page > 1) ref = ref.offset(this._page - 1 * this._limit);
+
     // apply conditions
     const fields = Object.entries(this.criteria);
     for (let i = 0, len = fields.length; i < len; i++) {
