@@ -103,8 +103,8 @@ class Query extends QueryInternal {
    */
   then(fn) {
     this._promiseDeferred();
-    // transform output TODO move me
-    this.queryRef.get().then(this._handleQueryResponse.bind(this)).catch(this._reject);
+    // transform output TODO move me / transform error output
+    this.nativeQuery.get().then(this._handleQueryResponse.bind(this)).catch(this._reject);
     if (this._promise) return this._promise.then.bind(this._promise)(fn);
     return undefined; // will never get here - just to keep flow happy
   }
@@ -115,8 +115,8 @@ class Query extends QueryInternal {
    */
   catch(fn) {
     this._promiseDeferred();
-    // todo transform output
-    this.queryRef.get().then().catch(this._reject);
+    // todo transform error output
+    this.nativeQuery.get().then().catch(this._reject);
     if (this._promise) return this._promise.catch.bind(this._promise)(fn);
     return undefined; // will never get here - just to keep flow happy
   }

@@ -11,7 +11,7 @@ class QueryInternal {
    *
    * @param model {Model}
    * @param filterOrString {Object|String}
-   * @param possibleValue {undefined|any}
+   * @param possibleValue? {undefined|any}
    */
   constructor(model, filterOrString, possibleValue) {
     if (!model.schema._validatedAssociations) {
@@ -56,8 +56,8 @@ class QueryInternal {
    *
    * @return {*}
    */
-  get queryRef() {
-    let ref = this._model.collectionRef;
+  get nativeQuery() {
+    let ref = this._model.nativeCollection;
 
     if (this._docId) {
       return ref.doc(this._docId);
