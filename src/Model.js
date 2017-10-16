@@ -1,6 +1,27 @@
 const Query = require('./Query');
-const { APPS } = require('./internals');
+const { APPS, UTILS } = require('./internals');
+const { isObject, typeOf, hasOwnProp, isUndefined, generateDocumentId } = UTILS;
+const { validateValueForType } = require('./validate/shared');
+
 const ModelInternal = require('./internals/ModelInternal');
+
+/**
+ * Todo move to utils
+ * @param doc
+ * @return {{}}
+ */
+function objectToTypeMap(doc) {
+  const out = {};
+  const entries = Object.entries(doc);
+
+  for (let i = 0, len = entries.length; i < len; i++) {
+    const field = entries[i][0];
+    const type = typeOf(entries[i][1]);
+    out[field] = { type, fieldName: field };
+  }
+
+  return out;
+}
 
 class Model extends ModelInternal {
   /**
@@ -58,7 +79,7 @@ class Model extends ModelInternal {
   }
 
   /**
-   *
+   * Find one or more documents.
    * @param filter
    * @return {Query}
    */
@@ -67,7 +88,7 @@ class Model extends ModelInternal {
   }
 
   /**
-   *
+   * Find a single document based on specified criteria.
    * @param filterOrString
    * @return {*}
    */
@@ -76,7 +97,7 @@ class Model extends ModelInternal {
   }
 
   /**
-   *
+   * Find a document by it's id
    * @param id
    * @return {*}
    */
@@ -84,8 +105,71 @@ class Model extends ModelInternal {
     return new Query(this, id).isFindOne(true);
   }
 
-  findOrCreate(filterOrString, document) {
+  /**
+   * Validates the pre-document object, throws if invalid or returns the generated output document if valid.
+   * @param obj
+   * @return {{}}
+   */
+  validate(obj) {
+    if (!isObject(obj)) throw new Error('document must be an object'); ///todo
 
+    const mappedDoc = {};
+    const attributes = this.schema.schema ? this.schema.attributes : Object.assign(objectToTypeMap(obj), this.schema.attributes);
+    const entries = Object.entries(attributes);
+
+    for (let i = 0, len = entries.length; i < len; i++) {
+      const attrName = entries[i][0];
+      const attrValue = entries[i][1];
+
+      // validate required fields
+      if (!hasOwnProp(attrValue, 'defaultsTo') && attrValue.required && !hasOwnProp(obj, attrName)) {
+        throw new Error(`missing required attr ${attrName}`); // todo
+      }
+
+      const value = hasOwnProp(obj, attrName) ? obj[attrName] : attrValue.defaultsTo;
+
+      // validate types
+      // if type is 'any' or 'undefined' then skip type checks
+      if (attrValue.type !== 'any' && !isUndefined(attrValue.type) && !validateValueForType(value, attrValue.type)) {
+        throw new Error(`Attr '${attrName}' has invalid type, expected '${attrValue.type}' got '${typeOf(value)}'`); // todo
+      }
+
+      // todo any custom validators e.g min/maxvalue or validator functions
+      // todo created at / updated at auto fields
+
+      mappedDoc[attrValue.fieldName || attrName] = value;
+    }
+
+    delete mappedDoc.id;
+    return mappedDoc;
+  }
+
+  /**
+   * Create a new document for this model.
+   * @param obj
+   */
+  create(obj) {
+    const id = obj.id || generateDocumentId();
+
+    return this.nativeCollection.doc(id)
+      .set(this.validate(obj))
+      .then(() => this.findOneById(id));
+  }
+
+
+  /**
+   * TODO is always creating for some reason
+   * @param filterOrString
+   * @param document
+   * @return {*|Promise|Promise.<TResult>}
+   */
+  findOrCreate(filterOrString, document) {
+    return new Query(this, filterOrString)
+      .isFindOne(true)
+      .then((result) => {
+        if (result) return result;
+        else return this.create(document);
+      })
   }
 
   createOrUpdate() {
@@ -103,12 +187,9 @@ class Model extends ModelInternal {
   update(id, object) {
   }
 
-  create() {
-  }
 
   destroy() {
   }
-
 
 
   subscribe() {
