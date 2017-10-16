@@ -25,7 +25,7 @@ class Model extends ModelInternal {
    * Returns the base CollectionReference for this model
    * @return {*}
    */
-  get collectionRef() {
+  get nativeCollection() {
     return this.app.firestore().collection(this.collectionName);
   }
 
