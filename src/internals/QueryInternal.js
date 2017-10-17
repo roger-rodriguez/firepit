@@ -1,5 +1,7 @@
 const { UTILS } = require('./');
 const { sortMap } = require('./../validate/shared');
+const documentSnapshot = require('./../convert/documentSnapshot');
+const querySnapshot = require('./../convert/querySnapshot');
 
 const {
   flatten, isString, isUndefined, isObject, isPrimitive,
@@ -135,49 +137,18 @@ class QueryInternal {
     return this;
   }
 
-  // todo 1) just a temporary response handler / convertor for now, move out and support
-  // todo ^ -- for everything including realtime.
+  /**
+   *
+   * @param response
+   * @return {*}
+   * @private
+   */
   _handleQueryResponse(response) {
     if (this._docId) {
-      if (response) {
-        const res = { id: response.id };
-        return this._resolve(Object.assign(res, response.data()))
-      } else {
-        return this._resolve(null);
-      }
+      return this._resolve(documentSnapshot(this._model, response));
     }
 
-    if (this._isFindOne) {
-      if (response.docs[0]) {
-        const res = { id: response.docs[0].id };
-        return this._resolve(Object.assign(res, response.docs[0].data()));
-      } else {
-        return this._resolve(null);
-      }
-    }
-
-    const out = [];
-    response.forEach((snap) => {
-      const res = { id: snap.id };
-      out.push(Object.assign(res, snap.data()));
-    });
-
-    Object.defineProperties(out, {
-      empty: {
-        enumerable: false,
-        value: response.empty,
-      },
-      query: {
-        enumerable: false,
-        value: this.queryRef,
-      },
-      changes: {
-        enumerable: false,
-        value: response.docChanges,
-      },
-    });
-
-    return this._resolve(out);
+    return this._resolve(querySnapshot(this, response, this._isFindOne));
   }
 
   /**
