@@ -20,6 +20,7 @@ class Query extends QueryInternal {
    * @return {Query}
    */
   limit(val) {
+    if (this._isFindOne) throw new Error('limit cannot be used with findOne');
     if (!isInteger(val)) throw new Error('limit must be an integer'); // todo
     if (val < 0) throw new Error('limit should not be less than 0'); // todo
     this._limit = val;
