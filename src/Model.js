@@ -174,6 +174,20 @@ class Model extends ModelInternal {
       })
   }
 
+  /**
+   *
+   * @param id
+   * @param obj
+   * @return {*|Promise|Promise.<TResult>}
+   */
+  updateOne(id, obj) {
+    return this.nativeCollection.doc(id)
+      // todo 1) should only validate updates and not check for missing fields
+    // todo    as the update is partial, if a field is deleted but is required it should throw
+      .update(this.validate(obj))
+      .then(() => this.findOneById(id));
+  }
+
   createOrUpdate() {
   }
 
@@ -183,21 +197,14 @@ class Model extends ModelInternal {
   count() {
   }
 
-  updateOne(id, obj) {
+  update(where, object) {
   }
 
-  update(id, object) {
+  destroy(id) {
   }
-
-
-  destroy() {
-  }
-
 
   subscribe() {
   }
-
-
 }
 
 module.exports = Model;
