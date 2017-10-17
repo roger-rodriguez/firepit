@@ -1,6 +1,6 @@
 const Query = require('./Query');
 const { APPS, UTILS } = require('./internals');
-const { isObject, typeOf, hasOwnProp, isUndefined, generateDocumentId } = UTILS;
+const { isObject, typeOf, isString, hasOwnProp, isUndefined, generateDocumentId } = UTILS;
 const { validateValueForType } = require('./validate/shared');
 
 const ModelInternal = require('./internals/ModelInternal');
@@ -102,6 +102,7 @@ class Model extends ModelInternal {
    * @return {*}
    */
   findOneById(id) {
+    if (!isString(id)) throw new Error('id for findOneById must be a string'); // todo
     return new Query(this, id).isFindOne(true);
   }
 
