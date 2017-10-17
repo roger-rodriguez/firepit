@@ -4,7 +4,9 @@
   "description": "",
   "main": "src/index.js",
   "scripts": {
-    "test": "nyc mocha"
+    "test": "nyc mocha",
+    "test:unit": "nyc mocha --recursive test/unit/",
+    "test:integration": "nyc mocha --recursive test/integration/"
   },
   "author": "",
   "license": "Apache-2.0",
