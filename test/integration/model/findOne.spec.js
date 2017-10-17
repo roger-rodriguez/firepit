@@ -50,7 +50,7 @@ describe('findOne', () => {
       });
   });
 
-  it('TODO should return a specific document when invalid string ID is given', () => {
+  it('TODO should return a specific document when ID is given when does not exist', () => {
     // todo
     // const User = firebase.firepit().model(model);
     //

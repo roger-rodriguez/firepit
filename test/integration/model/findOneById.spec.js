@@ -2,7 +2,7 @@ let firebase = null;
 
 const model = 'Test_Schema';
 
-describe('findOne', () => {
+describe('findOneById', () => {
 
   before(() => {
     firebase = require('../app')().firebase;
@@ -29,13 +29,12 @@ describe('findOne', () => {
     }).should.throw();
   });
 
-  it('TODO should throw when argument is not of type string', () => {
-    // todo
-    // const User = firebase.firepit().model(model);
-    //
-    // (() => {
-    //   User.findOneById({ id: '123' });
-    // }).should.throw();
+  it('should throw when argument is not of type string', () => {
+    const User = firebase.firepit().model(model);
+
+    (() => {
+      User.findOneById({ id: '123' });
+    }).should.throw();
   });
 
   it('should return a specific document of the same ID', () => {

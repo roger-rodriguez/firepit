@@ -5,10 +5,12 @@ const serviceAccount = require('../../firepit.json');
 describe('firebase module', () => {
 
   before(() => {
-    firepit.use(firebase.initializeApp({
-      credential: firebase.credential.cert(serviceAccount),
-      databaseURL: "https://firepit-tests.firebaseio.com"
-    }));
+    if (firebase.apps.length === 0) {
+      firepit.use(firebase.initializeApp({
+        credential: firebase.credential.cert(serviceAccount),
+        databaseURL: "https://firepit-tests.firebaseio.com"
+      }));
+    }
   });
 
   it('should extend app with firepit module', () => {
