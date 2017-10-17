@@ -1,7 +1,9 @@
 const Model = require('../../src/Model');
 const internals = require('../../src/internals');
+const STRINGS = internals.STRINGS;
 
 const testAppName = 'ModelTestApp';
+const modelName = 'Test';
 let testApp;
 
 describe('Model', () => {
@@ -13,9 +15,9 @@ describe('Model', () => {
   });
 
   it('should construct with required properties', () => {
-    const model = new Model(testAppName, 'Test', { schema: false });
+    const model = new Model(testAppName, modelName, { schema: false });
     model.should.have.property('appName', testAppName);
-    model.should.have.property('modelName', 'Test');
+    model.should.have.property('modelName', modelName);
     model.should.have.property('app'); // TODO firebase instance?
     model.should.have.property('schema').and.be.an.instanceOf(Object);
   });
@@ -25,7 +27,7 @@ describe('Model', () => {
       schema: false,
     };
 
-    const model = new Model(testAppName, 'Test');
+    const model = new Model(testAppName, modelName);
   });
 
   it('should throw when constructing without attributes if schema true', () => {
@@ -33,12 +35,12 @@ describe('Model', () => {
       schema: true,
     };
     (function () {
-      const model = new Model(testAppName, 'Test');
-    }).should.throw() // TODO error
+      const model = new Model(testAppName, modelName);
+    }).should.throw(STRINGS.ERROR_ATTRIBUTES_REQUIRED(modelName));
   });
 
   it('should construct with a default schema', () => {
-    const name = 'Test';
+    const name = modelName;
     const model = new Model(testAppName, name, { schema: true, attributes: { foo: 'string' } });
     const schema = model.schema;
 
@@ -70,7 +72,7 @@ describe('Model', () => {
       }
     };
 
-    const model = new Model(testAppName, 'Test');
+    const model = new Model(testAppName, modelName);
     const schema = model.schema;
 
     schema.should.be.an.instanceOf(Object);
@@ -92,7 +94,7 @@ describe('Model', () => {
     testApp.config = {
       schema: false,
     };
-    const model = new Model(testAppName, 'Test');
+    const model = new Model(testAppName, modelName);
 
     model.should.have.property('findOneByField').and.be.an.instanceOf(Function);
     model.should.have.property('findOneById').and.be.an.instanceOf(Function);
@@ -111,7 +113,7 @@ describe('Model', () => {
   });
 
   it('should construct with magic methods', () => {
-    const model = new Model(testAppName, 'Test', {
+    const model = new Model(testAppName, modelName, {
       attributes: {
         foo: {
           type: 'string',
