@@ -1,5 +1,5 @@
 const Model = require('./Model');
-const { APPS, createInstance } = require('./internals');
+const { APPS, createInstance, deleteInstance } = require('./internals');
 
 /**
  *
@@ -53,6 +53,12 @@ function model(name) {
 
 
 module.exports = {
+
+  /**
+   * Deletes an app instance by name
+   */
+  deleteInstance,
+
   /**
    *
    * @param appInstance
