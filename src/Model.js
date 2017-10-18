@@ -1,6 +1,6 @@
 const Query = require('./Query');
 const { APPS, UTILS } = require('./internals');
-const { isObject, typeOf, isString, hasOwnProp, isUndefined, generateDocumentId } = UTILS;
+const { isObject, typeOf, isString, isNull, hasOwnProp, isUndefined, generateDocumentId } = UTILS;
 const { validateValueForType } = require('./validate/shared');
 
 const ModelInternal = require('./internals/ModelInternal');
@@ -206,7 +206,25 @@ class Model extends ModelInternal {
   update(where, object) {
   }
 
-  destroy(id) {
+  /**
+   * Deletes an entire collection or specific documents by filter
+   * @param filterOrString
+   * @returns {*}
+   */
+  destroy(filterOrString = null) {
+    if (isNull(filterOrString)) {
+      // TODO batch delete collection
+      // https://cloud.google.com/firestore/docs/manage-data/delete-data
+    }
+
+    if (nullableFilterOrString) {
+      // Get all documents with no limit
+      return new Query(this, filter).limit(0)
+        .then((documents) => {
+          // TODO batch delete documents
+          // https://cloud.google.com/firestore/docs/manage-data/delete-data
+        });
+    }
   }
 
   subscribe() {
