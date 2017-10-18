@@ -50,14 +50,15 @@ describe('findOne', () => {
       });
   });
 
-  it('TODO should return a specific document when ID is given when does not exist', () => {
-    // todo
-    // const User = firebase.firepit().model(model);
-    //
-    // return User.findOne('foobar')
-    //   .then((document) => {
-    //     document.should.be.null();
-    //   });
+  it('should return null when ID is given when does not exist', () => {
+    const User = firebase.firepit().model(model);
+
+    return User.findOne('foobar')
+      .then((document) => {
+        if (document !== null) {
+          throw new (`Expected document to be null but got ${typeof document}`);
+        }
+      });
   });
 
   it('should return a specific document when passing criteria', () => {

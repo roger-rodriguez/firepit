@@ -47,14 +47,15 @@ describe('findOneById', () => {
       })
   });
 
-  it('TODO should return null when no documents have given ID', () => {
-    // todo
-    // const User = firebase.firepit().model(model);
-    //
-    // return User.findOneById('qwertyuiop')
-    //   .then((document) => {
-    //     document.should.be.null();
-    //   });
+  it('should return null when no documents have given ID', () => {
+    const User = firebase.firepit().model(model);
+
+    return User.findOneById('qwertyuiop')
+      .then((document) => {
+        if (document !== null) {
+          throw new (`Expected document to be null but got ${typeof document}`);
+        }
+      });
   });
 
 });
