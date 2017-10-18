@@ -57,7 +57,11 @@ class Query extends QueryInternal {
    */
   select(arrayOfFields) {
     if (!isArrayOfStrings(arrayOfFields)) throw new Error('field to select must be an array of strings'); // todo
-    this._select = arrayOfFields;
+    const out = {};
+    for (let i = 0, len = arrayOfFields.length; i < len; i++) {
+      out[arrayOfFields[i]] = true;
+    }
+    this._select = out;
     return this;
   }
 

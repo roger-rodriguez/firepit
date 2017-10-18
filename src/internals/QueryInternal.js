@@ -21,7 +21,7 @@ class QueryInternal {
     }
 
     this._page = 1;
-    this._select = [];
+    this._select = null;
     this._sort = null;
     this._docId = null;
     this._model = model;
@@ -100,8 +100,8 @@ class QueryInternal {
     }
 
     // apply projections
-    if (this._select && this._select.length) {
-      ref = ref.select(...this._select);
+    if (this._select) {
+      ref = ref.select(...Object.keys(this._select));
     } else {
       // TODO auto generate selections of fields in attributes if schema set to true
       // TODO to improve performance / reduce response size
@@ -145,10 +145,10 @@ class QueryInternal {
    */
   _handleQueryResponse(response) {
     if (this._docId) {
-      return this._resolve(documentSnapshot(this._model, response));
+      return this._resolve(documentSnapshot.call(this, response));
     }
 
-    return this._resolve(querySnapshot(this, response, this._isFindOne));
+    return this._resolve(querySnapshot.call(this, response));
   }
 
   /**

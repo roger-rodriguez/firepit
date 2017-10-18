@@ -1,11 +1,11 @@
 const documentSnapshot = require('./documentSnapshot');
 
-module.exports = function querySnapshot(query, querySnapshot, singular) {
+module.exports = function querySnapshot(querySnapshot) {
   const out = [];
   const docs = querySnapshot.docs || [];
 
   for (let i = 0, len = docs.length; i < len; i++) {
-    out.push(documentSnapshot(query._model, docs[i]));
+    out.push(documentSnapshot.call(this, docs[i]));
   }
 
   Object.defineProperties(out, {
@@ -15,7 +15,7 @@ module.exports = function querySnapshot(query, querySnapshot, singular) {
     },
     query: {
       enumerable: false,
-      value: query.nativeQuery,
+      value: this.nativeQuery,
     },
     changes: {
       enumerable: false,
@@ -23,7 +23,7 @@ module.exports = function querySnapshot(query, querySnapshot, singular) {
     },
   });
 
-  if (singular) return out[0] || null;
+  if (this._isFindOne) return out[0] || null;
   return out;
 };
 
