@@ -152,6 +152,7 @@ class Model extends ModelInternal {
   create(obj) {
     const id = obj.id || generateDocumentId();
     // todo promise.reject failed validation rather than throw? maybe this.validate().then.doc().set()
+    delete obj.id; // TODO shouldn't set the ID on the colletion if it's passed in to the create object - correct?
     return this.nativeCollection.doc(id)
       .set(this.validate(obj))
       // todo find should map custom fieldNames back to the correct attribute names
@@ -160,17 +161,22 @@ class Model extends ModelInternal {
 
 
   /**
-   * TODO is always creating for some reason
+   * TODO Handle ID? Should it create from the filter, or from document? What if autoId is set to true/false and they pass it through?
+   * Finds an existing document by ID or criteria, and creates if it does not exist
    * @param filterOrString
    * @param document
-   * @return {*|Promise|Promise.<TResult>}
    */
   findOrCreate(filterOrString, document) {
     return new Query(this, filterOrString)
       .isFindOne(true)
       .then((result) => {
         if (result) return result;
-        else return this.create(document);
+        else {
+          let id = null;
+          if (isString(filterOrString)) id = filterOrString;
+          else id = filterOrString.id;
+          return this.create(Object.assign(document, { id }));
+        }
       })
   }
 
