@@ -68,7 +68,7 @@ class BaseModel {
   // }
 
   deleteQueryByBatch(query, batchSize, count = 0) {
-    return query.limit(batchSize)
+    return query.sort('__name__').limit(batchSize)
       .then((documents) => {
         const length = documents.length;
         if (length === 0) {
