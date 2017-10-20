@@ -139,36 +139,17 @@ class QueryInternal {
 
   /**
    *
+   * @param deferred
    * @param response
    * @return {*}
    * @private
    */
-  _handleQueryResponse(response) {
+  _handleQueryResponse(deferred, response) {
     if (this._docId) {
-      return this._resolve(documentSnapshot.call(this, response));
+      return deferred._resolve(documentSnapshot.call(this, response));
     }
 
-    return this._resolve(querySnapshot.call(this, response));
-  }
-
-  /**
-   * Create a new internal deferred promise, if not already created
-   * @private
-   */
-  _promiseDeferred() {
-    if (!this._promise) {
-      this._promise = new Promise((resolve, reject) => {
-        this._resolve = (result) => {
-          this._resolve = null;
-          return resolve(result);
-        };
-
-        this._reject = (possibleError) => {
-          this._reject = null;
-          return reject(possibleError);
-        };
-      });
-    }
+    return deferred._resolve(querySnapshot.call(this, response));
   }
 }
 

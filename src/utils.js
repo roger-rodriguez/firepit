@@ -100,6 +100,42 @@ module.exports.generateDocumentId = function generateDocumentId() {
   return autoId;
 };
 
+/**
+ *
+ * @param fn
+ * @param cb
+ */
+module.exports.tryCatch = function tryCatch(fn) {
+  let error;
+  try {
+    fn();
+  } catch (catchError) {
+    error = catchError;
+  }
+
+  return error;
+};
+
+/**
+ * Create a new internal deferred promise, if not already created
+ * @private
+ */
+module.exports.deferredPromise = function deferredPromise() {
+  const deferred = {};
+  deferred.promise = new Promise((resolve, reject) => {
+    deferred._resolve = (result) => {
+      // this._resolve = null;
+      return resolve(result);
+    };
+
+    deferred._reject = (possibleError) => {
+      // this._reject = null;
+      return reject(possibleError);
+    };
+  });
+  return deferred;
+};
+
 module.exports.mergeDeep = deeps.merge;
 module.exports.flatten = deeps.flatten;
 module.exports.hasOwnProp = (target, prop) => Object.hasOwnProperty.call(target, prop);

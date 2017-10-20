@@ -1,3 +1,5 @@
+const firebase = require('firebase-admin') // TODO see _touchProperty
+
 const Schema = require('../Schema');
 const { UTILS } = require('./');
 const { toFirstUpper } = UTILS;
@@ -32,6 +34,66 @@ class BaseModel {
     this.schema = new Schema(appName, modelName, schema);
     attachMagicMethods(this);
   }
+
+  touch(obj) {
+    if (this.schema._schema.autoCreatedAt) this.touchCreatedAt(obj);
+    if (this.schema._schema.autoCreatedBy) this.touchCreatedBy(obj);
+    if (this.schema._schema.autoUpdatedAt) this.touchUpdatedAt(obj);
+    if (this.schema._schema.autoUpdatedBy) this.touchUpdatedBy(obj);
+  }
+
+  _touchProperty(obj, property) {
+    // TODO Need to use the import of firebase its not attached to the instance...
+    obj[property] = firebase.firestore.FieldValue.serverTimestamp();
+  }
+
+  touchCreatedAt(obj) {
+    this._touchProperty(obj, 'createdAt');
+  }
+
+  touchCreatedBy(obj) {
+    obj.createdBy = '_SERVER_'; // TODO when needed
+  }
+
+  touchUpdatedAt(obj) {
+    this._touchProperty(obj, 'updatedAt');
+  }
+
+  touchUpdatedBy(obj) {
+    obj.updatedBy = '_SERVER_'; // TODO when needed
+  }
+
+  // deleteCollection(batchSize = 10) {
+  //   return this._deleteQueryBatch(this.nativeCollection.limit(batchSize));
+  // }
+
+  deleteQueryByBatch(query, batchSize, count = 0) {
+    return query.limit(batchSize)
+      .then((documents) => {
+        const length = documents.length;
+        if (length === 0) {
+          return Promise.resolve();
+        }
+        count += length;
+        const batch = this.app.firestore().batch();
+        documents.forEach((doc) => batch.delete(doc.ref));
+        return batch.commit().then(() => length);
+      })
+      .then((numDeleted = 0) => {
+        if (numDeleted < batchSize) {
+          return Promise.resolve();
+        }
+
+        return new Promise((resolve) => {
+          process.nextTick(() => resolve(false));
+        });
+      })
+      .then((complete = true) => {
+        if (complete) return Promise.resolve(count);
+        return this.deleteQueryByBatch(query, batchSize, count)
+      });
+  }
 }
 
 module.exports = BaseModel;
+

@@ -22,11 +22,10 @@ firepit.use(app, {
 
 
 const alsoReturnsTheModel = firebase.firepit().createModel('User', {
-  schema: false,
+  schema: true,
   attributes: {
     name: {
       type: 'string',
-      required: true,
     },
     noob: {
       type: 'boolean',
@@ -41,14 +40,41 @@ const alsoReturnsTheModel = firebase.firepit().createModel('User', {
 
 firebase.firepit().initialize();
 
+// const query = firebase.firestore().collection('user').limit(1);
+// query.get().then((snapshot1) => {
+//   a = snapshot1.docs[0];
+//   const batch = firebase.firestore().batch();
+//   batch.delete(a.ref);
+//   return batch.commit();
+// }).then(() => {
+//   return query.get();
+// }).then((snapshot2) => {
+//   const b = snapshot2.docs[0]
+//   console.log(b.id)
+//   debugger;
+//   // snapshot1[0] === snapshot2[0]
+// })
+
+
 const User = firebase.firepit().model('User');
 
 User.create({
   age: 69,
   name: 'foobar'
-}).then((res) => {
+})
+.then((res) => {
   debugger;
-});
+})
+  .catch((e) => {
+  debugger;
+  })
+// User.destroy({}, 1)
+//   .then((doc) => {
+//   debugger;
+//   })
+//   .catch((e) => {
+//   debugger;
+//   })
 
 
 // User
@@ -77,3 +103,12 @@ User.create({
 //     console.error(error);
 //   });
 
+
+
+// User.destroy({ name: 'elliot' })
+//   .then((doc) => {
+//   debugger;
+//   })
+//   .catch((e) => {
+//   debugger;
+//   })

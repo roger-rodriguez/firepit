@@ -1,5 +1,5 @@
 const { UTILS } = require('./internals');
-const { isInteger, isString, isObject, mergeDeep, isArrayOfStrings } = UTILS;
+const { isInteger, isString, isObject, mergeDeep, isArrayOfStrings, deferredPromise } = UTILS;
 const { isValidFirestoreField, isValidSort } = require('./validate/shared');
 const QueryInternal = require('./internals/QueryInternal');
 
@@ -107,11 +107,10 @@ class Query extends QueryInternal {
    * @param fn
    */
   then(fn) {
-    this._promiseDeferred();
+    const deferred = deferredPromise();
     // transform output TODO move me / transform error output
-    this.nativeQuery.get().then(this._handleQueryResponse.bind(this)).catch(this._reject);
-    if (this._promise) return this._promise.then.bind(this._promise)(fn);
-    return undefined; // will never get here - just to keep flow happy
+    this.nativeQuery.get().then(this._handleQueryResponse.bind(this, deferred)).catch(deferred._reject);
+    return deferred.promise.then.bind(deferred.promise)(fn);
   }
 
   /**
@@ -119,11 +118,10 @@ class Query extends QueryInternal {
    * @param fn
    */
   catch(fn) {
-    this._promiseDeferred();
+    const deferred = deferredPromise();
     // todo transform error output
-    this.nativeQuery.get().then().catch(this._reject);
-    if (this._promise) return this._promise.catch.bind(this._promise)(fn);
-    return undefined; // will never get here - just to keep flow happy
+    this.nativeQuery.get().then().catch(deferred._reject);
+    return deferred.promise.catch.bind(deferred.promise)(fn);
   }
 }
 

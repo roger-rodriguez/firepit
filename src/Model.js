@@ -1,6 +1,15 @@
 const Query = require('./Query');
 const { APPS, UTILS } = require('./internals');
-const { isObject, typeOf, isString, isNull, hasOwnProp, isUndefined, generateDocumentId } = UTILS;
+const {
+  isObject,
+  typeOf,
+  isString,
+  isNull,
+  hasOwnProp,
+  isUndefined,
+  generateDocumentId,
+  tryCatch,
+} = UTILS;
 const { validateValueForType } = require('./validate/shared');
 
 const ModelInternal = require('./internals/ModelInternal');
@@ -109,10 +118,9 @@ class Model extends ModelInternal {
   /**
    * Validates the pre-document object, throws if invalid or returns the generated output document if valid.
    * @param obj
-   * @return {{}}
    */
   validate(obj) {
-    if (!isObject(obj)) throw new Error('document must be an object'); ///todo
+    if (!isObject(obj)) return Promise.reject(new Error('document must be an object'));
 
     const mappedDoc = {};
     const attributes = this.schema.schema ? this.schema.attributes : Object.assign(objectToTypeMap(obj), this.schema.attributes);
@@ -124,25 +132,41 @@ class Model extends ModelInternal {
 
       // validate required fields
       if (!hasOwnProp(attrValue, 'defaultsTo') && attrValue.required && !hasOwnProp(obj, attrName)) {
-        throw new Error(`missing required attr ${attrName}`); // todo
+        return Promise.reject(new Error(`missing required attr ${attrName}`));
       }
 
       const value = hasOwnProp(obj, attrName) ? obj[attrName] : attrValue.defaultsTo;
 
-      // validate types
+      // Validate Types
+
       // if type is 'any' or 'undefined' then skip type checks
       if (attrValue.type !== 'any' && !isUndefined(attrValue.type) && !validateValueForType(value, attrValue.type)) {
-        throw new Error(`Attr '${attrName}' has invalid type, expected '${attrValue.type}' got '${typeOf(value)}'`); // todo
+        return Promise.reject(new Error(`Attr '${attrName}' has invalid type, expected '${attrValue.type}' got '${typeOf(value)}'`));
       }
 
-      // todo any custom validators e.g min/maxvalue or validator functions
-      // todo created at / updated at auto fields
+      // Validate Properties
+      if ((attrValue.type === 'string' && attrValue.enum) && !attrValue.enum.includes(value)) {
+        return Promise.reject(new Error(`Attr '${attrName}' has invalid value, expected one of ${attrValue.enum.join(', ')} got ${value}`));
+      }
+
+      if ((attrValue.type === 'string' && hasOwnProp(attrValue, 'minLength')) && (value.length < attrValue.minLength)) {
+        return Promise.reject(new Error(`Attr '${attrName}' has invalid value, expected minimum length of ${attrValue.minLength} but got length of ${value.length}`));
+      }
+
+      if ((attrValue.type === 'string' && hasOwnProp(attrValue, 'maxLength')) && (value.length > attrValue.maxLength)) {
+        return Promise.reject(new Error(`Attr '${attrName}' has invalid value, expected maximum length of ${attrValue.maxLength} but got length of ${value.length}`));
+      }
+
+      if (attrValue.validate) {
+        const error = tryCatch(attrValue.validate.bind(obj, value));
+        if (error) return Promise.reject(error);
+      }
 
       mappedDoc[attrValue.fieldName || attrName] = value;
     }
 
     delete mappedDoc.id;
-    return mappedDoc;
+    return Promise.resolve(mappedDoc);
   }
 
   /**
@@ -151,12 +175,14 @@ class Model extends ModelInternal {
    */
   create(obj) {
     const id = obj.id || generateDocumentId();
-    // todo promise.reject failed validation rather than throw? maybe this.validate().then.doc().set()
-    // delete obj.id; // TODO shouldn't set the ID on the colletion if it's passed in to the create object - correct?
-    return this.nativeCollection.doc(id)
-      .set(this.validate(obj))
-      // todo find should map custom fieldNames back to the correct attribute names
-      .then(() => this.findOneById(id));
+    return this.validate(obj)
+      .then((validated) => {
+        this.touch(validated);
+        return this.nativeCollection.doc(id).set(validated);
+      })
+      .then(() => {
+        return this.findOneById(id);
+      });
   }
 
 
@@ -174,7 +200,7 @@ class Model extends ModelInternal {
       .isFindOne(true)
       .then((result) => {
         if (result) return result;
-
+        this.touch(result);
         if (isString(filterOrString)) Object.assign(document, { id: filterOrString });
         return this.create(document);
       })
@@ -200,7 +226,15 @@ class Model extends ModelInternal {
   native() {
   }
 
-  count() {
+  /**
+   * TODO needs to be more efficient using select - need to figure out what can be selected though
+   * Counts number of records
+   * @param filterOrString
+   * @returns {*}
+   */
+  count(filterOrString = {}) {
+    return new Query(this, filterOrString).limit(0)
+      .then((results) => results.length);
   }
 
   update(where, object) {
@@ -209,22 +243,19 @@ class Model extends ModelInternal {
   /**
    * Deletes an entire collection or specific documents by filter
    * @param filterOrString
+   * @param batchSize
    * @returns {*}
    */
-  destroy(filterOrString = null) {
-    if (isNull(filterOrString)) {
-      // TODO batch delete collection
-      // https://cloud.google.com/firestore/docs/manage-data/delete-data
+  destroy(filterOrString = null, batchSize = 250) {
+    if (isObject(filterOrString) && filterOrString.id) {
+      return Promise.reject('Given criteria cannot contain an id key. Use .destroy(id <-- unique ID');
     }
 
-    if (nullableFilterOrString) {
-      // Get all documents with no limit
-      return new Query(this, filter).limit(0)
-        .then((documents) => {
-          // TODO batch delete documents
-          // https://cloud.google.com/firestore/docs/manage-data/delete-data
-        });
+    if (isNull(filterOrString) || isObject(filterOrString)) {
+      return this.deleteQueryByBatch(new Query(this, filterOrString || {}), batchSize);
     }
+
+    return this.nativeCollection.doc(filterOrString).delete();
   }
 
   subscribe() {
