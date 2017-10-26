@@ -180,7 +180,13 @@ class Model extends ModelInternal {
    */
   create(obj) {
     const id = obj.id || generateDocumentId();
-    return this.validate(obj)
+    return this.findOneById(id)
+      .then((exists) => {
+        if (exists) {
+          return Promise.reject(new Error(`Document with the ID ${id} already exists. Create failed.`));
+        }
+        return this.validate(obj)
+      })
       .then((validated) => {
         this.touchCreated(validated);
         return this.nativeCollection.doc(id).set(validated);
