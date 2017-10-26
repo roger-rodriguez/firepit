@@ -136,7 +136,16 @@ module.exports.deferredPromise = function deferredPromise() {
   return deferred;
 };
 
+module.exports.batch = function batch(array, size) {
+  const batches = [];
+  while (array.length > 0) {
+    batches.push(array.splice(0, size));
+  }
+  return batches;
+};
+
 module.exports.mergeDeep = deeps.merge;
 module.exports.flatten = deeps.flatten;
+module.exports.unflatten = deeps.unflatten;
 module.exports.hasOwnProp = (target, prop) => Object.hasOwnProperty.call(target, prop);
 

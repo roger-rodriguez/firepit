@@ -5,10 +5,14 @@ const {
   typeOf,
   isString,
   isNull,
+  isArray,
+  isArrayOfStrings,
   hasOwnProp,
   isUndefined,
   generateDocumentId,
   tryCatch,
+  flatten,
+  unflatten,
 } = UTILS;
 const { validateValueForType } = require('./validate/shared');
 
@@ -118,6 +122,7 @@ class Model extends ModelInternal {
   /**
    * Validates the pre-document object, throws if invalid or returns the generated output document if valid.
    * @param obj
+   * TODO If partial (update) then ignore required field
    */
   validate(obj) {
     if (!isObject(obj)) return Promise.reject(new Error('document must be an object'));
@@ -177,7 +182,7 @@ class Model extends ModelInternal {
     const id = obj.id || generateDocumentId();
     return this.validate(obj)
       .then((validated) => {
-        this.touch(validated);
+        this.touchCreated(validated);
         return this.nativeCollection.doc(id).set(validated);
       })
       .then(() => {
@@ -200,7 +205,7 @@ class Model extends ModelInternal {
       .isFindOne(true)
       .then((result) => {
         if (result) return result;
-        this.touch(result);
+        this.touchCreated(result);
         if (isString(filterOrString)) Object.assign(document, { id: filterOrString });
         return this.create(document);
       })
@@ -209,25 +214,51 @@ class Model extends ModelInternal {
   /**
    *
    * @param id
-   * @param obj
-   * @return {*|Promise|Promise.<TResult>}
+   * @param update
    */
-  updateOne(id, obj) {
-    return this.nativeCollection.doc(id)
-    // todo 1) should only validate updates and not check for missing fields
-    // todo    as the update is partial, if a field is deleted but is required it should throw
-      .update(this.validate(obj))
-      .then(() => this.findOneById(id));
+  updateOne(id, update) {
+    if (!isString(id)) {
+      return Promise.reject(new Error('ID must be a string'));
+    }
+
+    if (!isObject(obj)) {
+      return Promise.reject(new Error('update must be an object'));
+    }
+
+    if (update.id) {
+      return Promise.reject(new Error('update cannot contain ID field'));
+    }
+
+    return this.nativeCollection.doc(id).get()
+      .then((toUpdate) => {
+        if (!toUpdate.exists) {
+          return Promise.resolve(null);
+        }
+        // flatten and merge
+        const merged = Object.assign(flatten(toUpdate), flatten(update));
+        return this.validate(unflatten(merged));
+      })
+      .then((validated) => {
+        if (!validated) return Promise.resolve(null);
+        this.touchUpdated(validated);
+        return this.nativeCollection.doc(id).update(validated);
+      });
   }
 
   createOrUpdate() {
-  }
-
-  native() {
+    // TODO set with merge
   }
 
   /**
-   * TODO needs to be more efficient using select - need to figure out what can be selected though
+   * Returns the firestore collection instance of the Model
+   * @returns {*}
+   */
+  native() {
+    return this.nativeCollection;
+  }
+
+  /**
+   * TODO needs to be more efficient using select - need to figure out what can be selected though - does orderBy __name__ make it quicker?
    * Counts number of records
    * @param filterOrString
    * @returns {*}
@@ -238,27 +269,33 @@ class Model extends ModelInternal {
   }
 
   update(where, object) {
+    // partial validate,  GET -> batch set
   }
 
   /**
    * Deletes an entire collection or specific documents by filter
-   * @param filterOrString
+   * @param filterOrStringOrArray
    * @param batchSize
    * @returns {*}
    */
-  destroy(filterOrString = null, batchSize = 250) {
-    if (isObject(filterOrString) && filterOrString.id) {
+  destroy(filterOrStringOrArray = null, batchSize = 50) {
+    if (isObject(filterOrStringOrArray) && filterOrStringOrArray.id) {
       return Promise.reject('Given criteria cannot contain an id key. Use .destroy(id <-- unique ID');
     }
 
-    if (isNull(filterOrString) || isObject(filterOrString)) {
-      return this.deleteQueryByBatch(new Query(this, filterOrString || {}), batchSize);
+    if (isArray(filterOrStringOrArray) && !isArrayOfStrings(filterOrStringOrArray)) {
+      return Promise.reject('Given array must be an array of string IDs');
+    }
+
+    if (isNull(filterOrStringOrArray) || isObject(filterOrStringOrArray)) {
+      return this.deleteQueryByBatch(new Query(this, filterOrStringOrArray || {}), batchSize);
+    }
+
+    if (isArrayOfStrings(filterOrStringOrArray)) {
+      return this.deleteIdsByBatch(filterOrStringOrArray, batchSize);
     }
 
     return this.nativeCollection.doc(filterOrString).delete();
-  }
-
-  subscribe() {
   }
 }
 

@@ -2,7 +2,7 @@ const firebase = require('firebase-admin') // TODO see _touchProperty
 
 const Schema = require('../Schema');
 const { UTILS } = require('./');
-const { toFirstUpper } = UTILS;
+const { toFirstUpper, batch } = UTILS;
 
 /**
  *
@@ -35,12 +35,18 @@ class BaseModel {
     attachMagicMethods(this);
   }
 
-  touch(obj) {
+  touchCreated(obj) {
     if (this.schema._schema.autoCreatedAt) this.touchCreatedAt(obj);
     if (this.schema._schema.autoCreatedBy) this.touchCreatedBy(obj);
     if (this.schema._schema.autoUpdatedAt) this.touchUpdatedAt(obj);
     if (this.schema._schema.autoUpdatedBy) this.touchUpdatedBy(obj);
   }
+
+  touchUpdated(obj) {
+    if (this.schema._schema.autoUpdatedAt) this.touchUpdatedAt(obj);
+    if (this.schema._schema.autoUpdatedBy) this.touchUpdatedBy(obj);
+  }
+
 
   _touchProperty(obj, property) {
     // TODO Need to use the import of firebase its not attached to the instance...
@@ -63,10 +69,12 @@ class BaseModel {
     obj.updatedBy = '_SERVER_'; // TODO when needed
   }
 
-  // deleteCollection(batchSize = 10) {
-  //   return this._deleteQueryBatch(this.nativeCollection.limit(batchSize));
-  // }
-
+  /**
+   * Batch deletes by a query
+   * @param query
+   * @param batchSize
+   * @param count
+   */
   deleteQueryByBatch(query, batchSize, count = 0) {
     return query.sort('__name__').limit(batchSize)
       .then((documents) => {
@@ -92,6 +100,42 @@ class BaseModel {
         if (complete) return Promise.resolve(count);
         return this.deleteQueryByBatch(query, batchSize, count)
       });
+  }
+
+  /**
+   * Batch deletes by an
+   * @param ids
+   * @param batchSize
+   */
+  deleteIdsByBatch(ids, batchSize) {
+    let index = 0;
+    const batches = batch(ids, batchSize);
+    const writeBatches = new Array(batches.length);
+
+    // For each batch
+    for (let i = 0, len = batches.length; i < len; i++) {
+      const batch = this.app.firestore().batch();
+
+      // For each id, add the batch delete
+      for (let j = 0, len = batches[i].length; j < len; j++) {
+        batch.delete(this.nativeCollection.doc(batches[i][j]));
+      }
+
+      writeBatches[i] = batch;
+    }
+
+    function commitBatches() {
+      if (writeBatches[index]) {
+        return writeBatches[index].commit().then(() => {
+          index++;
+          return commitBatches();
+        });
+      }
+
+      return Promise.resolve();
+    }
+
+    return commitBatches();
   }
 }
 
