@@ -2,7 +2,7 @@ const firebase = require('firebase-admin') // TODO see _touchProperty
 
 const Schema = require('../Schema');
 const { UTILS } = require('./');
-const { toFirstUpper, batch } = UTILS;
+const { toFirstUpper, batch, flatten } = UTILS;
 
 /**
  *
@@ -98,7 +98,7 @@ class BaseModel {
       })
       .then((complete = true) => {
         if (complete) return Promise.resolve(count);
-        return this.deleteQueryByBatch(query, batchSize, count)
+        return this.deleteQueryByBatch(query, batchSize, count);
       });
   }
 
@@ -128,6 +128,7 @@ class BaseModel {
       if (writeBatches[index]) {
         return writeBatches[index].commit().then(() => {
           index++;
+
           return commitBatches();
         });
       }
@@ -136,6 +137,42 @@ class BaseModel {
     }
 
     return commitBatches();
+  }
+
+  /**
+   *
+   * @param query
+   * @param update
+   * @param batchSize
+   * @param count
+   */
+  updateQueryByBatch(query, update, batchSize, count = 0) {
+    const flatUpdate = flatten(update);
+
+    return query.limit(batchSize)
+      .then((documents) => {
+        const length = documents.length;
+        if (length === 0) {
+          return Promise.resolve();
+        }
+        count += length;
+        const batch = this.app.firestore().batch();
+        documents.forEach((doc) => batch.update(doc.ref, flatUpdate));
+        return batch.commit().then(() => length);
+      })
+      .then((numUpdated = 0) => {
+        if (numUpdated < batchSize) {
+          return Promise.resolve();
+        }
+
+        return new Promise((resolve) => {
+          process.nextTick(() => resolve(false));
+        });
+      })
+      .then((complete = true) => {
+        if (complete) return Promise.resolve(count);
+        return this.updateQueryByBatch(query, update, batchSize, count);
+      });
   }
 }
 

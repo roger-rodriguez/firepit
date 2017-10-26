@@ -122,9 +122,9 @@ class Model extends ModelInternal {
   /**
    * Validates the pre-document object, throws if invalid or returns the generated output document if valid.
    * @param obj
-   * TODO If partial (update) then ignore required field
+   * @param partial
    */
-  validate(obj) {
+  validate(obj, partial = false) {
     if (!isObject(obj)) return Promise.reject(new Error('document must be an object'));
 
     const mappedDoc = {};
@@ -135,8 +135,11 @@ class Model extends ModelInternal {
       const attrName = entries[i][0];
       const attrValue = entries[i][1];
 
-      // validate required fields
-      if (!hasOwnProp(attrValue, 'defaultsTo') && attrValue.required && !hasOwnProp(obj, attrName)) {
+      // Skip attribute check
+      if (partial && !hasOwnProp(obj, attrName)) continue;
+
+      // validate required fields if it full check
+      if (!partial && !hasOwnProp(attrValue, 'defaultsTo') && attrValue.required && !hasOwnProp(obj, attrName)) {
         return Promise.reject(new Error(`missing required attr ${attrName}`));
       }
 
@@ -177,6 +180,7 @@ class Model extends ModelInternal {
   /**
    * Create a new document for this model.
    * @param obj
+   * TODO what if it's auto gen ID on schema?
    */
   create(obj) {
     const id = obj.id || generateDocumentId();
@@ -219,6 +223,23 @@ class Model extends ModelInternal {
 
   /**
    *
+   * @param filterOrString
+   * @param update
+   * @param batchSize
+   */
+  update(filterOrString, update, batchSize = 50) {
+    if (isString(filterOrString)) {
+      return this.updateOne(filterOrString, update);
+    }
+
+    return this.validate(update, true)
+      .then((validated) => {
+        return this.updateQueryByBatch(new Query(this, filterOrString || {}), validated, batchSize);
+      });
+  }
+
+  /**
+   *
    * @param id
    * @param update
    */
@@ -227,7 +248,7 @@ class Model extends ModelInternal {
       return Promise.reject(new Error('ID must be a string'));
     }
 
-    if (!isObject(obj)) {
+    if (!isObject(update)) {
       return Promise.reject(new Error('update must be an object'));
     }
 
@@ -235,24 +256,28 @@ class Model extends ModelInternal {
       return Promise.reject(new Error('update cannot contain ID field'));
     }
 
-    return this.nativeCollection.doc(id).get()
-      .then((toUpdate) => {
-        if (!toUpdate.exists) {
-          return Promise.resolve(null);
-        }
-        // flatten and merge
-        const merged = Object.assign(flatten(toUpdate), flatten(update));
-        return this.validate(unflatten(merged));
-      })
+    return this.validate(update, true)
       .then((validated) => {
-        if (!validated) return Promise.resolve(null);
         this.touchUpdated(validated);
         return this.nativeCollection.doc(id).update(validated);
+      })
+      .then(() => {
+        return this.findOneById(id);
+      })
+      .catch((error) => {
+        if (error.message.includes('no entity to update')) {
+          return Promise.resolve(null);
+        }
+        return Promise.reject(error);
       });
   }
 
-  createOrUpdate() {
-    // TODO set with merge
+  /**
+   * TODO Wont this only work if they have a custom ID?
+   * @param obj
+   */
+  createOrUpdate(obj) {
+
   }
 
   /**
@@ -272,10 +297,6 @@ class Model extends ModelInternal {
   count(filterOrString = {}) {
     return new Query(this, filterOrString).limit(0)
       .then((results) => results.length);
-  }
-
-  update(where, object) {
-    // partial validate,  GET -> batch set
   }
 
   /**
