@@ -1,8 +1,6 @@
 let firebase = null;
 
 const model = 'Test_Schema';
-let idToUpdate = null;
-const original = { name: 'foobar', age: 123, deep: { foo: 'bar' } };
 
 describe('destroy', () => {
 
@@ -94,5 +92,27 @@ describe('destroy', () => {
         if (document !== null) throw new Error('Document returned after it should have been destroyed');
       });
   });
+
+  it('should destroy documents by id', () => {
+    const User = firebase.firepit().model(model);
+    let id = null;
+
+    const toDestroy = {
+      name: `${Math.random().toString(32)}`,
+      age: 123,
+    };
+
+    return User
+      .create(toDestroy)
+      .then((created) => {
+        id = created.id;
+        return User.destroy(id);
+      })
+      .then(() => User.findOneById(id))
+      .then((document) => {
+        if (document !== null) throw new Error('Document returned after it should have been destroyed');
+      });
+  });
+
 
 });

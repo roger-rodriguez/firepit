@@ -329,7 +329,7 @@ class Model extends ModelInternal {
       return this.deleteIdsByBatch(filterOrStringOrArray, batchSize);
     }
 
-    return this.nativeCollection.doc(filterOrString).delete();
+    return this.nativeCollection.doc(filterOrStringOrArray).delete();
   }
 }
 
