@@ -195,7 +195,7 @@ class Model extends ModelInternal {
         if (exists) {
           return Promise.reject(new Error(`Document with the ID ${id} already exists. Create failed.`));
         }
-        return this.validate(obj)
+        return this.validate(obj);
       })
       .then((validated) => {
         this.touchCreated(validated);
@@ -229,18 +229,19 @@ class Model extends ModelInternal {
 
   /**
    *
-   * @param filterOrString
+   * @param filter
    * @param update
    * @param batchSize
    */
-  update(filterOrString, update, batchSize = 50) {
-    if (isString(filterOrString)) {
-      return this.updateOne(filterOrString, update);
+  update(filter, update, batchSize = 50) {
+    if (isString(filter)) {
+      throw new Error('Given criteria should not be a string. Use .updateOne(id <-- unique ID');
     }
 
     return this.validate(update, true)
       .then((validated) => {
-        return this.updateQueryByBatch(new Query(this, filterOrString || {}), validated, batchSize);
+        this.touchUpdated(validated);
+        return this.updateQueryByBatch(new Query(this, filter || {}), validated, batchSize);
       });
   }
 
