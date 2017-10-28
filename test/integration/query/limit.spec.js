@@ -36,9 +36,9 @@ describe('limit', () => {
 
     let total = null;
 
-    return User.find()
-      .then((documents) => {
-        total = documents.length;
+    return User.count()
+      .then((count) => {
+        total = count;
         return User.find().limit(0);
       })
       .then((documents) => {
