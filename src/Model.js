@@ -331,6 +331,18 @@ class Model extends ModelInternal {
 
     return this.nativeCollection.doc(filterOrStringOrArray).delete();
   }
+
+  /**
+   * Subscribes to updates on a document(s)
+   * @param filterOrString
+   * @param onData
+   * @param onError
+   * @returns {*}
+   */
+  subscribe(filterOrString = {}, onData, onError) {
+    return new Query(this, filterOrString)
+      .onSnapshot(onData, onError);
+  }
 }
 
 module.exports = Model;

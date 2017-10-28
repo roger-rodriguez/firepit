@@ -151,6 +151,22 @@ class QueryInternal {
 
     return deferred._resolve(querySnapshot.call(this, response));
   }
+
+  /**
+   * TODO - single ID works... filter throws error
+   * @param onEvent
+   * @param onError
+   * @returns {*}
+   */
+  onSnapshot(onEvent, onError) {
+    return this.nativeQuery.onSnapshot((snapshot) => {
+      if (this._docId) {
+        return onEvent(documentSnapshot.call(this, snapshot));
+      }
+
+      return onEvent(querySnapshot.call(this, snapshot));
+    }, onError);
+  }
 }
 
 module.exports = QueryInternal;
