@@ -11,8 +11,6 @@ const {
   isUndefined,
   generateDocumentId,
   tryCatch,
-  flatten,
-  unflatten,
 } = UTILS;
 const { validateValueForType } = require('./validate/shared');
 
@@ -180,10 +178,18 @@ class Model extends ModelInternal {
   /**
    * Create a new document for this model.
    * @param obj
-   * TODO what if it's auto gen ID on schema?
    */
   create(obj) {
+    if (this.schema._schema.autoId && obj.id) {
+      return Promise.reject(new Error('Cannot contain ID when autoId is enabled'));
+    }
+
+    if (!this.schema._schema.autoId && !obj.id) {
+      return Promise.reject(new Error(`ID ${obj.id} is not valid`));
+    }
+
     const id = obj.id || generateDocumentId();
+
     return this.findOneById(id)
       .then((exists) => {
         if (exists) {
@@ -218,7 +224,7 @@ class Model extends ModelInternal {
         this.touchCreated(result);
         if (isString(filterOrString)) Object.assign(document, { id: filterOrString });
         return this.create(document);
-      })
+      });
   }
 
   /**
@@ -289,7 +295,7 @@ class Model extends ModelInternal {
   }
 
   /**
-   * TODO needs to be more efficient using select - need to figure out what can be selected though - does orderBy __name__ make it quicker?
+   * TODO efficiency?
    * Counts number of records
    * @param filterOrString
    * @returns {*}

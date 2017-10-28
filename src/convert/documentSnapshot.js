@@ -16,6 +16,11 @@ module.exports = function documentSnapshot(documentSnapshot) {
     }
   }
 
+  if (model.schema.autoCreatedAt) out['createdAt'] = data.createdAt;
+  if (model.schema.autoCreatedBy) out['createdBy'] = data.createdBy;
+  if (model.schema.autoUpdatedAt) out['updatedAt'] = data.updatedAt;
+  if (model.schema.autoUpdatedBy) out['updatedBy'] = data.updatedBy;
+
   Object.defineProperties(out, {
     ref: {
       enumerable: false,

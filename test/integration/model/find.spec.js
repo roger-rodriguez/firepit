@@ -1,6 +1,6 @@
 let firebase = null;
 
-const model = 'Test_User_Schema';
+const model = 'Test_Schema';
 
 describe('find', () => {
 
