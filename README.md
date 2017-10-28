@@ -8,15 +8,15 @@
 
 Firepit is a JavaScript ORM for [Firebase Cloud Firestore](https://firebase.google.com/docs/firestore/). It provides a common interface for interacting with the service inspired by [Mongoose](http://mongoosejs.com/) and [Waterline](https://github.com/balderdashy/waterline). Firepit allows you to be as explict or implicit as you want by defining your datastore in models.
 
-[Documentation](https://firepit.io/docs) <b>|</b> [npm](https://www.npmjs.com/package/firepit)
+<b>|</b> [Documentation](https://firepit.io/docs) <b>|</b> [npm](https://www.npmjs.com/package/firepit) <b>|</b>
 
-```
+```bash
 npm install --save firepit
 ```
 
 ## Quick Start
 
-```
+```js
 const firebase = require('firebase-admin');
 const firepit = require('firepit');
 const app = firebase.initializeApp(...);
