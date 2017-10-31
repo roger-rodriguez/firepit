@@ -1,7 +1,7 @@
 const firebase = require('firebase-admin') // TODO see _touchProperty
 
 const Schema = require('../Schema');
-const { UTILS } = require('./');
+const { APPS, UTILS, STRINGS } = require('./');
 const { toFirstUpper, batch, flatten } = UTILS;
 
 /**
@@ -29,8 +29,13 @@ class BaseModel {
    * @param schema
    */
   constructor(appName, modelName, schema) {
+    if (APPS[appName].models[modelName]) {
+      throw new Error(STRINGS.MODEL_IN_USE(appName, modelName));
+    }
+
     this.appName = appName;
     this.modelName = modelName;
+    this.identity = modelName.toLowerCase();
     this.schema = new Schema(appName, modelName, schema);
     attachMagicMethods(this);
   }
@@ -46,7 +51,6 @@ class BaseModel {
     if (this.schema._schema.autoUpdatedAt) this.touchUpdatedAt(obj);
     if (this.schema._schema.autoUpdatedBy) this.touchUpdatedBy(obj);
   }
-
 
   _touchProperty(obj, property) {
     // TODO Need to use the import of firebase its not attached to the instance...
