@@ -31,8 +31,22 @@ const REGEXP_FIELD_PATH = new RegExp(
   `^((?:(?:[A-Za-z_][A-Za-z_0-9]*)|(?:[A-Za-z_][A-Za-z_0-9]*))+)(?:\\.((?:(?:[A-Za-z_][A-Za-z_0-9]*)|(?:[A-Za-z_][A-Za-z_0-9]*))+))*$`
 );
 
+const REGEXP_MODEL_NAME = new RegExp(
+  `^[a-zA-Z_]+$`
+);
+
 module.exports = {
   sortMap: sorts,
+
+  /**
+   *
+   * @param name
+   * @returns {boolean}
+   */
+  isValidModelName(name) {
+    return REGEXP_MODEL_NAME.test(name);
+  },
+
   /**
    *
    * @param value

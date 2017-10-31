@@ -1,5 +1,7 @@
 const Model = require('./Model');
-const { APPS, createInstance, deleteInstance } = require('./internals');
+const { APPS, createInstance, deleteInstance, STRINGS } = require('./internals');
+const { isValidModelName } = require('./validate/shared');
+const { isString } = require('./utils');
 
 /**
  *
@@ -25,15 +27,16 @@ function initialize() {
  * @returns Model
  */
 function createModel(name, schema) {
-  if (!name) throw new Error('name required'); // todo
+  if (!name) throw new Error(STRINGS.MODEL_NAME_MISSING());
+  if (!isString(name) || !isValidModelName(name)) throw new Error(STRINGS.MODEL_NAME_INVALID(name));
 
   const appName = this.appInstance.name;
 
-  // store the originally passed user schema
-  APPS[appName].schemas[name] = schema;
-
   // create the model
   APPS[appName].models[name] = new Model(appName, name, schema);
+
+  // store the originally passed user schema
+  APPS[appName].schemas[name] = schema;
 
   // return created model
   return APPS[appName].models[name];
@@ -45,9 +48,9 @@ function createModel(name, schema) {
  * @returns Model
  */
 function model(name) {
-  if (!name) throw new Error('name required'); // todo
+  if (!isString(name)) throw new Error(STRINGS.MODEL_NAME_MISSING('model'));
   const model = APPS[this.appInstance.name].models[name];
-  if (!model) throw new Error('404 model not found'); // todo
+  if (!model) throw new Error(STRINGS.MODEL_NOT_FOUND(name));
   return model;
 }
 

@@ -1,115 +1,160 @@
-const { TYPES, UTILS } = require('./../internals');
+const { TYPES, UTILS, STRINGS } = require('./../internals');
 
 const { validateValueForType, isValidFirestoreField } = require('./shared');
 const { hasOwnProp, isInteger, isString, isFunction, isBoolean, isPrimitive, typeOf } = UTILS;
 
+/**
+ * Validates an attribute has a valid type property, such as string, object, null etc
+ * @param key
+ * @param modelName
+ * @param attribute
+ */
 module.exports.validateType = function validateType(key, modelName, attribute) {
   if (!TYPES[attribute.type]) {
-    throw new Error(`Type ${attribute.type} aint valid`); // TODO
+    throw new Error(STRINGS.ATTRIBUTE_TYPE_INVALID(modelName, attribute, Object.keys(TYPES).join(', ')));
   }
 };
 
+/**
+ * Validates that a string can be a key on the Firestore database
+ * @param key
+ * @param modelName
+ * @param attribute
+ */
 module.exports.validateFieldName = function validateFieldName(key, modelName, attribute) {
   if (!isString(attribute.fieldName)) {
-    throw new Error('fieldName must be a string');
+    throw new Error(STRINGS.ATTRIBUTE_FIELD_NAME_TYPE_INVALID(modelName, key, typeOf(attribute.fieldName)));
   }
 
   const valid = isValidFirestoreField(attribute.fieldName);
 
   if (!valid) {
-    throw new Error(`Field ${attribute.fieldName} is not a valid Cloud Firestore field name`); // TODO
+    throw new Error(STRINGS.ATTRIBUTE_FIELD_NAME_INVALID(modelName, key, attribute.fieldName));
   }
 };
 
+/**
+ * Validates that a given defaultsTo value is the same as the attribute type
+ * @param key
+ * @param modelName
+ * @param attribute
+ */
 module.exports.validateDefaultValue = function validateDefaultValue(key, modelName, attribute) {
   if (hasOwnProp(attribute, 'defaultsTo')) {
     if (!validateValueForType(attribute.defaultsTo, attribute.type)) {
-      throw new Error(`Default value ${attribute.defaultsTo} is not of type ${attribute.type}`); // TODO
+      throw new Error(STRINGS.ATTRIBUTE_DEFAULTS_TO_INVALID(modelName, attribute, typeOf(attribute.defaultsTo)));
     }
   }
 };
 
+/**
+ *
+ * @param key
+ * @param modelName
+ * @param attribute
+ */
 module.exports.validateEnums = function validateEnums(key, modelName, attribute) {
   if (hasOwnProp(attribute, 'enum')) {
     if (typeOf(attribute.enum) !== 'array') {
-      throw new Error(`Enum prop must be an array`); // TODO
+      throw new Error(STRINGS.ATTRIBUTE_ENUM_INVALID_TYPE(modelName, attribute, typeOf(attribute.enum)));
     }
 
     if (attribute.enum.length === 0) {
-      throw new Error(`Enum prop must be an array and contain items`); // TODO
+      throw new Error(STRINGS.ATTRIBUTE_ENUM_EMPTY(modelName, attribute));
     }
 
     if (attribute.type !== 'any') {
       for (let i = 0, len = attribute.enum.length; i < len; i++) {
         const value = attribute.enum[i];
         if (typeOf(value) !== attribute.type) {
-          throw new Error(`Enum contains value isnt of the type ${attribute.type}`); // TODO
+          throw new Error(STRINGS.ATTRIBUTE_ENUM_CONTAINS_INVALID_VALUE(modelName, attribute, typeOf(value)));
         }
       }
     } else {
       for (let i = 0, len = attribute.enum.length; i < len; i++) {
         const value = attribute.enum[i];
         if (!isPrimitive(value)) {
-          throw new Error(`Enum contains value which isnt a primitive value`); // TODO
+          throw new Error(STRINGS.ATTRIBUTE_ENUM_CONTAINS_NON_PRIMITIVE_VALUE(modelName, attribute, typeOf(value)));
         }
       }
     }
 
     if (hasOwnProp(attribute, 'defaultsTo') && !attribute.enum.includes(attribute.defaultsTo)) {
-      throw new Error(`Default value not in enum array`); // TODO
+      throw new Error(STRINGS.ATTRIBUTE_DEFAULTS_TO_NOT_IN_ENUM(modelName, attribute));
     }
   }
 };
 
+/**
+ *
+ * @param key
+ * @param modelName
+ * @param attribute
+ */
 module.exports.validateRequired = function validateRequired(key, modelName, attribute) {
   if (hasOwnProp(attribute, 'required') && !isBoolean(attribute.required)) {
-    throw new Error(`Required key is not a bool`); // TODO
+    throw new Error(STRINGS.ATTRIBUTE_REQUIRED_INVALID_TYPE(modelName, attribute, typeOf(attribute.required)));
   }
 };
 
-const isValidLength = module.exports.isValidLength = function isValidLength(key, value) {
-  if (!isInteger(value)) {
-    throw new Error(`${type} must be an integer`); // TODO
+/**
+ *
+ * @type {exports.isValidLength}
+ */
+const isValidLength = module.exports.isValidLength = function isValidLength(property, modelName, attribute) {
+  if (!isInteger(attribute[property])) {
+    throw new Error(STRINGS.ATTRIBUTE_LENGTH_INVALID_TYPE(modelName, attribute, property, typeOf(attribute[property])));
   }
 
-  if (value < 0) {
-    throw new Error(`${type} value must be greater than 0`); // TODO
+  if (attribute[property] < 0) {
+    throw new Error(STRINGS.ATTRIBUTE_LENGTH_LESS_THAN_ZERO(modelName, attribute, property));
   }
 };
 
+/**
+ *
+ * @param key
+ * @param modelName
+ * @param attribute
+ */
 module.exports.validateLength = function validateLength(key, modelName, attribute) {
   if (hasOwnProp(attribute, 'minLength') || hasOwnProp(attribute, 'maxLength')) {
     if (attribute.type !== 'string') {
-      throw new Error(`Using minLength or maxLength requires attribute type to be string`); // TODO
+      throw new Error(STRINGS.ATTRIBUTE_LENGTH_REQUIRES_STRING_TYPE(modelName, attribute));
     }
 
     if (hasOwnProp(attribute, 'minLength')) {
-      isValidLength('minLength', attribute.minLength);
+      isValidLength('minLength', modelName, attribute);
     }
     if (hasOwnProp(attribute, 'maxLength')) {
-      isValidLength('maxLength', attribute.maxLength);
+      isValidLength('maxLength',modelName,  attribute);
     }
     if (hasOwnProp(attribute, 'minLength') && hasOwnProp(attribute, 'maxLength')) {
       if (attribute.minLength >= attribute.maxLength) {
-        throw new Error(`minLength has to be less than maxLength`); // TODO
+        throw new Error(STRINGS.ATTRIBUTE_MIN_LENGTH_GREATER_THAN_MAX_LENGTH(modelName, attribute));
       }
     }
 
     if (hasOwnProp(attribute, 'defaultsTo')) {
       if (hasOwnProp(attribute, 'minLength') && attribute.defaultsTo.length < attribute.minLength) {
-        throw new Error('defaultsTo value cannot be less than the minLength');
+        throw new Error(STRINGS.ATTRIBUTE_MIN_LENGTH_GREATER_THAN_DEFAULTS_TO_VALUE(modelName, attribute));
       }
       if (hasOwnProp(attribute, 'maxLength') && attribute.defaultsTo.length > attribute.maxLength) {
-        throw new Error('defaultsTo value cannot be less than the minLength');
+        throw new Error(STRINGS.ATTRIBUTE_MAX_LENGTH_LESS_THAN_DEFAULTS_TO_VALUE(modelName, attribute));
       }
     }
   }
 };
 
+/**
+ * @param key
+ * @param modelName
+ * @param attribute
+ */
 module.exports.validateValidate = function validateValidate(key, modelName, attribute) {
   if (hasOwnProp(attribute, 'validate')) {
     if (!isFunction(attribute.validate)) {
-      throw new Error(`validate has to be function`); // TODO
+      throw new Error(STRINGS.ATTRIBUTE_VALIDATE_INVALID_TYPE(modelName, attribute, typeOf(attribute.validate)));
     }
 
     if (hasOwnProp(attribute, 'defaultsTo')) {

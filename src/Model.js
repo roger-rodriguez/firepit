@@ -1,5 +1,5 @@
 const Query = require('./Query');
-const { APPS, UTILS } = require('./internals');
+const { APPS, UTILS, STRINGS } = require('./internals');
 const {
   isObject,
   typeOf,
@@ -113,7 +113,7 @@ class Model extends ModelInternal {
    * @return {*}
    */
   findOneById(id) {
-    if (!isString(id)) throw new Error('id for findOneById must be a string'); // todo
+    if (!isString(id)) return Promise.reject(new Error(STRINGS.MODEL_INVALID_PARAM_TYPE('findOneById', 'id', 'string', typeOf(id))));
     return new Query(this, id).isFindOne(true);
   }
 
@@ -123,6 +123,7 @@ class Model extends ModelInternal {
    * @param partial
    */
   validate(obj, partial = false) {
+    // TODO
     if (!isObject(obj)) return Promise.reject(new Error('document must be an object'));
 
     const mappedDoc = {};
@@ -248,15 +249,15 @@ class Model extends ModelInternal {
   /**
    *
    * @param id
-   * @param update
+   * @param document
    */
-  updateOne(id, update) {
+  updateOne(id, document) {
     if (!isString(id)) {
-      return Promise.reject(new Error('ID must be a string'));
+      return Promise.reject(new Error(STRINGS.MODEL_INVALID_PARAM_TYPE('updateOne', 'id', 'string', typeOfid)));
     }
 
-    if (!isObject(update)) {
-      return Promise.reject(new Error('update must be an object'));
+    if (!isObject(document)) {
+      return Promise.reject(new Error(STRINGS.MODEL_INVALID_PARAM_TYPE('updateOne', 'document', 'object', typeOf(document))));
     }
 
     if (update.id) {
