@@ -136,6 +136,12 @@ module.exports.deferredPromise = function deferredPromise() {
   return deferred;
 };
 
+/**
+ * Batches an array into smaller chunks of arrays
+ * @param array
+ * @param size
+ * @returns {Array}
+ */
 module.exports.batch = function batch(array, size) {
   const batches = [];
   while (array.length > 0) {

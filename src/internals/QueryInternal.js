@@ -31,6 +31,7 @@ class QueryInternal {
     this._criteria = null;
     this._isFindOne = false;
     this._limit = model.schema.limit;
+    this._associations = {};
 
     // filter object or single id
     if (isUndefined(possibleValue)) {

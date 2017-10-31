@@ -50,7 +50,7 @@ class Model extends ModelInternal {
    * @return {Object}
    */
   get app() {
-    return APPS[this.appName].app
+    return APPS[this.appName].app;
   }
 
   /**

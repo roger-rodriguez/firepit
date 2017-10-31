@@ -65,7 +65,6 @@ class Query extends QueryInternal {
     return this;
   }
 
-
   /**
    *
    * @param sortCriteria
@@ -99,6 +98,15 @@ class Query extends QueryInternal {
     }
 
     this._sort = mergeDeep(this._sort || {}, _sortCriteria);
+    return this;
+  }
+
+  /**
+   *
+   * @param field
+   */
+  populate(field) {
+    if (!isString(field)) throw new Error('field to populate must be of type string'); // todo
     return this;
   }
 
