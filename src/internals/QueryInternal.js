@@ -12,10 +12,10 @@ class QueryInternal {
   /**
    *
    * @param model {Model}
-   * @param filterOrString {Object|String}
+   * @param criteriaOrString {Object|String}
    * @param possibleValue? {undefined|any}
    */
-  constructor(model, filterOrString, possibleValue) {
+  constructor(model, criteriaOrString, possibleValue) {
     if (!model.schema._validatedAssociations) {
       model.schema._validateAssociations();
     }
@@ -35,13 +35,13 @@ class QueryInternal {
 
     // filter object or single id
     if (isUndefined(possibleValue)) {
-      if (isString(filterOrString)) this._docId = filterOrString;
-      else if (isObject(filterOrString)) this._criteria = Object.assign({}, filterOrString);
+      if (isString(criteriaOrString)) this._docId = criteriaOrString;
+      else if (isObject(criteriaOrString)) this._criteria = Object.assign({}, criteriaOrString);
       else throw new Error('Invalid arguments provided to Query'); // todo
     } else {
       // single field + value
-      if (!isString(filterOrString)) throw new Error('filter field name must be a string'); // TODO
-      this._criteria = { [filterOrString]: possibleValue };
+      if (!isString(criteriaOrString)) throw new Error('filter field name must be a string'); // TODO
+      this._criteria = { [criteriaOrString]: possibleValue };
     }
 
     if (this._criteria) this.validateCriteria();

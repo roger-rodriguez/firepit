@@ -21,7 +21,7 @@ function attachMagicMethods(model) {
   }
 }
 
-class BaseModel {
+class ModelInternal {
   /**
    *
    * @param appName
@@ -180,5 +180,5 @@ class BaseModel {
   }
 }
 
-module.exports = BaseModel;
+module.exports = ModelInternal;
 

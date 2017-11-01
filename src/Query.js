@@ -7,11 +7,11 @@ class Query extends QueryInternal {
   /**
    *
    * @param model {Model}
-   * @param filterOrString {Object|String}
+   * @param criteriaOrString {Object|String}
    * @param possibleValue {undefined|any}
    */
-  constructor(model, filterOrString, possibleValue) {
-    super(model, filterOrString, possibleValue);
+  constructor(model, criteriaOrString, possibleValue) {
+    super(model, criteriaOrString, possibleValue);
   }
 
   /**

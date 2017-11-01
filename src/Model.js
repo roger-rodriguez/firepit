@@ -91,20 +91,20 @@ class Model extends ModelInternal {
 
   /**
    * Find one or more documents.
-   * @param filter
+   * @param criteria
    * @return {Query}
    */
-  find(filter = {}) {
-    return new Query(this, filter);
+  find(criteria = {}) {
+    return new Query(this, criteria);
   }
 
   /**
    * Find a single document based on specified criteria.
-   * @param filterOrString
+   * @param criteriaOrString
    * @return {*}
    */
-  findOne(filterOrString) {
-    return new Query(this, filterOrString).isFindOne(true);
+  findOne(criteriaOrString) {
+    return new Query(this, criteriaOrString).isFindOne(true);
   }
 
   /**
@@ -119,15 +119,15 @@ class Model extends ModelInternal {
 
   /**
    * Validates the pre-document object, throws if invalid or returns the generated output document if valid.
-   * @param obj
+   * @param document
    * @param partial
    */
-  validate(obj, partial = false) {
+  validate(document, partial = false) {
     // TODO
-    if (!isObject(obj)) return Promise.reject(new Error('document must be an object'));
+    if (!isObject(document)) return Promise.reject(new Error('document must be an object'));
 
     const mappedDoc = {};
-    const attributes = this.schema.schema ? this.schema.attributes : Object.assign(objectToTypeMap(obj), this.schema.attributes);
+    const attributes = this.schema.schema ? this.schema.attributes : Object.assign(objectToTypeMap(document), this.schema.attributes);
     const entries = Object.entries(attributes);
 
     for (let i = 0, len = entries.length; i < len; i++) {
@@ -135,14 +135,14 @@ class Model extends ModelInternal {
       const attrValue = entries[i][1];
 
       // Skip attribute check
-      if (partial && !hasOwnProp(obj, attrName)) continue;
+      if (partial && !hasOwnProp(document, attrName)) continue;
 
       // validate required fields if it full check
-      if (!partial && !hasOwnProp(attrValue, 'defaultsTo') && attrValue.required && !hasOwnProp(obj, attrName)) {
+      if (!partial && !hasOwnProp(attrValue, 'defaultsTo') && attrValue.required && !hasOwnProp(document, attrName)) {
         return Promise.reject(new Error(`missing required attr ${attrName}`));
       }
 
-      const value = hasOwnProp(obj, attrName) ? obj[attrName] : attrValue.defaultsTo;
+      const value = hasOwnProp(document, attrName) ? document[attrName] : attrValue.defaultsTo;
 
       // Validate Types
 
@@ -165,7 +165,7 @@ class Model extends ModelInternal {
       }
 
       if (attrValue.validate) {
-        const error = tryCatch(attrValue.validate.bind(obj, value));
+        const error = tryCatch(attrValue.validate.bind(document, value));
         if (error) return Promise.reject(error);
       }
 
@@ -178,25 +178,25 @@ class Model extends ModelInternal {
 
   /**
    * Create a new document for this model.
-   * @param obj
+   * @param document
    */
-  create(obj) {
-    if (this.schema._schema.autoId && obj.id) {
+  create(document) {
+    if (this.schema._schema.autoId && document.id) {
       return Promise.reject(new Error('Cannot contain ID when autoId is enabled'));
     }
 
-    if (!this.schema._schema.autoId && !obj.id) {
-      return Promise.reject(new Error(`ID ${obj.id} is not valid`));
+    if (!this.schema._schema.autoId && !document.id) {
+      return Promise.reject(new Error(`ID ${document.id} is not valid`));
     }
 
-    const id = obj.id || generateDocumentId();
+    const id = document.id || generateDocumentId();
 
     return this.findOneById(id)
       .then((exists) => {
         if (exists) {
           return Promise.reject(new Error(`Document with the ID ${id} already exists. Create failed.`));
         }
-        return this.validate(obj);
+        return this.validate(document);
       })
       .then((validated) => {
         this.touchCreated(validated);
@@ -210,20 +210,20 @@ class Model extends ModelInternal {
 
   /**
    * Finds an existing document by ID or criteria, and creates if it does not exist
-   * @param filterOrString
+   * @param criteriaOrString
    * @param document
    */
-  findOrCreate(filterOrString, document) {
-    if (isObject(filterOrString) && filterOrString.id) {
+  findOrCreate(criteriaOrString, document) {
+    if (isObject(criteriaOrString) && criteriaOrString.id) {
       return Promise.reject(new Error('Given criteria cannot contain an id key. Use .findOrCreate(id <-- unique ID'));
     }
 
-    return new Query(this, filterOrString)
+    return new Query(this, criteriaOrString)
       .isFindOne(true)
       .then((result) => {
         if (result) return result;
         this.touchCreated(result);
-        if (isString(filterOrString)) Object.assign(document, { id: filterOrString });
+        if (isString(criteriaOrString)) Object.assign(document, { id: criteriaOrString });
         return this.create(document);
       });
   }
@@ -299,49 +299,49 @@ class Model extends ModelInternal {
   /**
    * TODO efficiency?
    * Counts number of records
-   * @param filterOrString
+   * @param criteriaOrString
    * @returns {*}
    */
-  count(filterOrString = {}) {
-    return new Query(this, filterOrString).limit(0)
+  count(criteriaOrString = {}) {
+    return new Query(this, criteriaOrString).limit(0)
       .then((results) => results.length);
   }
 
   /**
    * Deletes an entire collection or specific documents by filter
-   * @param filterOrStringOrArray
+   * @param criteriaOrStringOrArray
    * @param batchSize
    * @returns {*}
    */
-  destroy(filterOrStringOrArray = null, batchSize = 50) {
-    if (isObject(filterOrStringOrArray) && filterOrStringOrArray.id) {
+  destroy(criteriaOrStringOrArray = null, batchSize = 50) {
+    if (isObject(criteriaOrStringOrArray) && criteriaOrStringOrArray.id) {
       return Promise.reject('Given criteria cannot contain an id key. Use .destroy(id <-- unique ID');
     }
 
-    if (isArray(filterOrStringOrArray) && !isArrayOfStrings(filterOrStringOrArray)) {
+    if (isArray(criteriaOrStringOrArray) && !isArrayOfStrings(criteriaOrStringOrArray)) {
       return Promise.reject('Given array must be an array of string IDs');
     }
 
-    if (isNull(filterOrStringOrArray) || isObject(filterOrStringOrArray)) {
-      return this.deleteQueryByBatch(new Query(this, filterOrStringOrArray || {}), batchSize);
+    if (isNull(criteriaOrStringOrArray) || isObject(criteriaOrStringOrArray)) {
+      return this.deleteQueryByBatch(new Query(this, criteriaOrStringOrArray || {}), batchSize);
     }
 
-    if (isArrayOfStrings(filterOrStringOrArray)) {
-      return this.deleteIdsByBatch(filterOrStringOrArray, batchSize);
+    if (isArrayOfStrings(criteriaOrStringOrArray)) {
+      return this.deleteIdsByBatch(criteriaOrStringOrArray, batchSize);
     }
 
-    return this.nativeCollection.doc(filterOrStringOrArray).delete();
+    return this.nativeCollection.doc(criteriaOrStringOrArray).delete();
   }
 
   /**
    * Subscribes to updates on a document(s)
-   * @param filterOrString
+   * @param criteriaOrString
    * @param onData
    * @param onError
    * @returns {*}
    */
-  subscribe(filterOrString = {}, onData, onError) {
-    return new Query(this, filterOrString)
+  subscribe(criteriaOrString = {}, onData, onError) {
+    return new Query(this, criteriaOrString)
       .onSnapshot(onData, onError);
   }
 }
