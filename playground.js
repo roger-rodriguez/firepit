@@ -31,7 +31,7 @@ firebase.firepit().createModel('User', {
     // one to many - virtual field
     posts: {
       hasMany: 'post',
-      via: 'user',
+      via: 'created_by',
     },
 
     // one to one - actual field
@@ -72,7 +72,7 @@ firebase.firepit().createModel('Post', {
     title: 'string',
 
     // one to many - actual field
-    user: {
+    created_by: {
       hasOne: 'user',
     },
 
@@ -89,10 +89,8 @@ firebase.firepit().initialize();
 const User = firebase.firepit().model('User');
 const Post = firebase.firepit().model('Post');
 
-User.create({
-  age: 69,
-  name: 'foobar'
-})
+Post.findOneById('DuJrCe3pOgjiqk8uIpTd')
+  .populate('created_by')
   .then((res) => {
     debugger;
   })
