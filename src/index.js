@@ -31,15 +31,16 @@ function createModel(name, schema) {
   if (!isString(name) || !isValidModelName(name)) throw new Error(STRINGS.MODEL_NAME_INVALID(name));
 
   const appName = this.appInstance.name;
+  const _name = name.toLowerCase();
 
   // create the model
-  APPS[appName].models[name] = new Model(appName, name, schema);
+  APPS[appName].models[_name] = new Model(appName, _name, schema);
 
   // store the originally passed user schema
-  APPS[appName].schemas[name] = schema;
+  APPS[appName].schemas[_name] = schema;
 
   // return created model
-  return APPS[appName].models[name];
+  return APPS[appName].models[_name];
 }
 
 /**
@@ -49,7 +50,7 @@ function createModel(name, schema) {
  */
 function model(name) {
   if (!isString(name)) throw new Error(STRINGS.MODEL_NAME_MISSING('model'));
-  const model = APPS[this.appInstance.name].models[name];
+  const model = APPS[this.appInstance.name].models[name.toLowerCase()];
   if (!model) throw new Error(STRINGS.MODEL_NOT_FOUND(name));
   return model;
 }
