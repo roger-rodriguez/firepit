@@ -21,94 +21,86 @@ firepit.use(app, {
 });
 
 
-const alsoReturnsTheModel = firebase.firepit().createModel('User', {
+firebase.firepit().createModel('User', {
   schema: true,
   attributes: {
     name: {
       type: 'string',
     },
-    noob: {
-      type: 'boolean',
-      defaultsTo: false,
+
+    // one to many - virtual field
+    posts: {
+      hasMany: 'post',
+      via: 'user',
     },
-    age: {
-      type: 'integer',
-      required: true,
+
+    // one to one - actual field
+    vehicle: {
+      hasOne: 'vehicle',
+      via: 'owner',
+    },
+
+    // one way assoc - actual field
+    first_post: {
+      hasOne: 'post',
+    },
+
+    // many to many - virtual field - via join table
+    liked_posts: {
+      hasMany: 'post',
+      via: 'likes'
     },
   },
 });
 
+firebase.firepit().createModel('Vehicle', {
+  schema: true,
+  attributes: {
+    make: 'string',
+
+    // one to one - actual field
+    owner: {
+      hasOne: 'user',
+      via: 'vehicle',
+    },
+  },
+});
+
+firebase.firepit().createModel('Post', {
+  schema: true,
+  attributes: {
+    title: 'string',
+
+    // one to many - actual field
+    user: {
+      hasOne: 'user',
+    },
+
+
+    // many to many - virtual field - via join table
+    likes: {
+      hasMany: 'user',
+      via: 'liked_posts'
+    }
+  },
+});
+
 firebase.firepit().initialize();
-
-// const query = firebase.firestore().collection('user').limit(1);
-// query.get().then((snapshot1) => {
-//   a = snapshot1.docs[0];
-//   const batch = firebase.firestore().batch();
-//   batch.delete(a.ref);
-//   return batch.commit();
-// }).then(() => {
-//   return query.get();
-// }).then((snapshot2) => {
-//   const b = snapshot2.docs[0]
-//   console.log(b.id)
-//   debugger;
-//   // snapshot1[0] === snapshot2[0]
-// })
-
-
 const User = firebase.firepit().model('User');
+const Post = firebase.firepit().model('Post');
 
 User.create({
   age: 69,
   name: 'foobar'
 })
-.then((res) => {
-  debugger;
-})
-  .catch((e) => {
-  debugger;
+  .then((res) => {
+    debugger;
   })
-// User.destroy({}, 1)
-//   .then((doc) => {
-//   debugger;
-//   })
-//   .catch((e) => {
-//   debugger;
-//   })
+  .catch((e) => {
+    debugger;
+  })
 
 
-// User
-// // .find({ name: 'elliot' })
-// // .findOneByName('elliot')
-//   .findByNoob(true)
-//   .where({
-//     age: {
-//       $gte: 12,
-//       $lte: 55,
-//     },
-//   })
-//   .select(['age'])
-//   // .findOne('dJbQltnAsv4wKuJTdxZU')
-//   // .findOneById('dJbQltnAsv4wKuJTdxZU')
-//   // .sort('age', 'asc')
-//   // .sort({ age: 1 })
-//   // .sort({ age: -1 })
-//   // .sort('age', 'desc')
-//   // .limit(1)
-//   // .page(1)
-//   .then((result) => {
-//     console.dir(result);
-//   })
-//   .catch((error) => {
-//     console.error(error);
-//   });
-
-
-
-// User.destroy({ name: 'elliot' })
-//   .then((doc) => {
-//   debugger;
-//   })
-//   .catch((e) => {
-//   debugger;
-//   })
+Post.create({
+  user: 'xyz'
+})
