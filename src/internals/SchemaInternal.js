@@ -87,7 +87,7 @@ class SchemaInternal {
     this._validatedAssociations = true;
 
     this._associations = Object.assign({}, this._hasMany, this._hasOne);
-    debugger;
+    APPS[this._appName].associations.setAssociationsForModel(APPS[this._appName].models[this._modelName]);
   }
 
   _validateHasOneAssociations() {

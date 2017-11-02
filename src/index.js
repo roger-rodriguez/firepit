@@ -1,4 +1,5 @@
 const Model = require('./Model');
+const Associations = require('./internals/Associations');
 const { APPS, createInstance, deleteInstance, STRINGS } = require('./internals');
 const { isValidModelName } = require('./validate/shared');
 const { isString } = require('./utils');
@@ -10,6 +11,8 @@ function initialize() {
   const appName = this.appInstance.name;
 
   const appInternal = APPS[appName];
+
+  appInternal.associations = new Associations(appInternal);
 
   const schemaKeys = Object.keys(appInternal.schemas);
 
