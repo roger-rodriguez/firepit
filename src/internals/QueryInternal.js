@@ -21,17 +21,17 @@ class QueryInternal {
     }
 
     this._page = 1;
-    this._select = null;
     this._sort = null;
     this._docId = null;
+    this._select = null;
     this._model = model;
     this._reject = null;
     this._resolve = null;
+    this._populates = {};
     this._promise = null;
     this._criteria = null;
     this._isFindOne = false;
     this._limit = model.schema.limit;
-    this._associations = {};
 
     // filter object or single id
     if (isUndefined(possibleValue)) {

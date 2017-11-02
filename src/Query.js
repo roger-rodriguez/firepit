@@ -103,6 +103,8 @@ class Query extends QueryInternal {
    */
   populate(field) {
     if (!isString(field)) throw new Error(STRINGS.INVALID_PARAM_TYPE('populate', 'field', 'string', typeOf(field)));
+    // todo add query populate types
+    this._populates[field] = true;
     return this;
   }
 
