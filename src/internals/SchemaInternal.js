@@ -28,6 +28,7 @@ class SchemaInternal {
     );
     this._hasMany = {};
     this._hasOne = {};
+    this._associations = {};
 
     this._validate();
   }
@@ -58,6 +59,7 @@ class SchemaInternal {
       }
 
       validateFieldName(key, this._modelName, attribute);
+      validateRequired(key, this._modelName, attribute);
 
       if (attribute.hasOne) {
         attribute.hasOne = attribute.hasOne.toLowerCase();
@@ -74,7 +76,6 @@ class SchemaInternal {
       validateType(key, this._modelName, attribute);
       validateDefaultValue(key, this._modelName, attribute);
       validateEnums(key, this._modelName, attribute);
-      validateRequired(key, this._modelName, attribute);
       validateLength(key, this._modelName, attribute);
       validateValidate(key, this._modelName, attribute);
     }
@@ -84,6 +85,9 @@ class SchemaInternal {
     this._validateHasOneAssociations();
     this._validateHasManyAssociations();
     this._validatedAssociations = true;
+
+    this._associations = Object.assign({}, this._hasMany, this._hasOne);
+    debugger;
   }
 
   _validateHasOneAssociations() {
@@ -94,21 +98,24 @@ class SchemaInternal {
       const key = keys[i];
       const attribute = this._hasOne[key];
 
-      if (!attribute.via) {
-        throw new Error(`hasOne attribute is missing a 'via' property`);
-      }
+      // if (!attribute.via) {
+      //   throw new Error(`hasOne attribute is missing a 'via' property`);
+      // }
 
-      if (!APPS[this._appName].models[attribute.hasOne]) {
-        throw new Error(`hasOne defined with a collection "${attribute.hasOne}" which has not been defined`);
-      }
+      // todo validate validations
+      // if (!APPS[this._appName].models[attribute.hasOne]) {
+      //   throw new Error(`hasOne defined with a collection "${attribute.hasOne}" which has not been defined`);
+      // }
+      //
+      // if (!APPS[this._appName].schemas[attribute.hasOne].attributes[attribute.via]) {
+      //   throw new Error(`hasOne defined with an association "${attribute.via}" which does not exist on model "${attribute.hasOne}"`);
+      // }
+      //
+      // if (APPS[this._appName].schemas[attribute.hasOne].attributes[attribute.via].type !== 'string') {
+      //   throw new Error(`hasOne defined with an association "${attribute.via}" on "${attribute.hasOne}" model, which is not of type string`);
+      // }
 
-      if (!APPS[this._appName].schemas[attribute.hasOne].attributes[attribute.via]) {
-        throw new Error(`hasOne defined with an association "${attribute.via}" which does not exist on model "${attribute.hasOne}"`);
-      }
-
-      if (APPS[this._appName].schemas[attribute.hasOne].attributes[attribute.via].type !== 'string') {
-        throw new Error(`hasOne defined with an association "${attribute.via}" on "${attribute.hasOne}" model, which is not of type string`);
-      }
+      this._hasOne[key].model = APPS[this._appName].models[attribute.hasOne];
     }
   }
 
@@ -125,11 +132,13 @@ class SchemaInternal {
         throw new Error(`hasMany defined with a model "${attribute.hasMany}" which has not been defined`);
       }
 
-      if (definedAssociations[attribute.hasMany]) {
-        throw new Error(`hasMany association "${attribute.hasMany}" has already been defined on this model on attribute "${definedAssociations[attribute.hasMany]}"`);
-      }
+      // if (definedAssociations[attribute.hasMany]) {
+      //   throw new Error(`hasMany association "${attribute.hasMany}" has already been defined on this model on attribute "${definedAssociations[attribute.hasMany]}"`);
+      // }
 
       definedAssociations[attribute.hasMany] = key;
+      this._hasMany[key].model = APPS[this._appName].models[attribute.hasMany];
+
     }
   }
 }
