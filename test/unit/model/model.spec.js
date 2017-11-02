@@ -36,7 +36,7 @@ describe('Model', () => {
     };
     (function () {
       const model = new Model(testAppName, modelName);
-    }).should.throw(STRINGS.ERROR_ATTRIBUTES_REQUIRED(modelName));
+    }).should.throw();
   });
 
   it('should construct with a default schema', () => {
