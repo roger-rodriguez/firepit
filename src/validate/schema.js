@@ -66,7 +66,7 @@ module.exports.validateEnums = function validateEnums(key, modelName, attribute)
     if (attribute.type !== 'any') {
       for (let i = 0, len = attribute.enum.length; i < len; i++) {
         const value = attribute.enum[i];
-        if (typeOf(value) !== attribute.type) {
+        if (TYPES[attribute.type] !== typeOf(value)) {
           throw new Error(STRINGS.ATTRIBUTE_ENUM_CONTAINS_INVALID_VALUE(modelName, attribute, typeOf(value)));
         }
       }

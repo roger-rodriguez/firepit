@@ -16,6 +16,7 @@ module.exports = function documentSnapshot(documentSnapshot) {
     }
   }
 
+  // Attach auto fields back onto the document
   if (model.schema.autoCreatedAt) out['createdAt'] = data.createdAt;
   if (model.schema.autoCreatedBy) out['createdBy'] = data.createdBy;
   if (model.schema.autoUpdatedAt) out['updatedAt'] = data.updatedAt;

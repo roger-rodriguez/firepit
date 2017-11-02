@@ -1,10 +1,10 @@
-const { UTILS } = require('./');
+const { UTILS, STRINGS } = require('./');
 const { sortMap } = require('./../validate/shared');
 const documentSnapshot = require('./../convert/documentSnapshot');
 const querySnapshot = require('./../convert/querySnapshot');
 
 const {
-  flatten, isString, isUndefined, isObject, isPrimitive,
+  flatten, isString, isUndefined, isObject, isPrimitive, typeOf,
 } = UTILS;
 
 
@@ -37,10 +37,10 @@ class QueryInternal {
     if (isUndefined(possibleValue)) {
       if (isString(criteriaOrString)) this._docId = criteriaOrString;
       else if (isObject(criteriaOrString)) this._criteria = Object.assign({}, criteriaOrString);
-      else throw new Error('Invalid arguments provided to Query'); // todo
+      else throw new Error(STRINGS.QUERY_INVALID_ARGUMENTS(typeOf(criteriaOrString)));
     } else {
       // single field + value
-      if (!isString(criteriaOrString)) throw new Error('filter field name must be a string'); // TODO
+      if (!isString(criteriaOrString)) throw new Error(STRINGS.QUERY_FIELD_NAME_INVALID(typeOf(criteriaOrString)));
       this._criteria = { [criteriaOrString]: possibleValue };
     }
 
@@ -120,9 +120,9 @@ class QueryInternal {
       const field = fields[i][0];
       const value = fields[i][1];
       if (!field.startsWith('$')) { // skip modifiers such as $inc
-        // todo should this also check values are of correct type based on model attributes?
-        if (!isString(field)) throw new Error('filter field name must be a string'); // TODO
-        if (!isPrimitive(value)) throw new Error('filter value must be one of X Y Z'); // TODO
+        // TODO should this also check values are of correct type based on model attributes?
+        if (!isString(field)) throw new Error(STRINGS.QUERY_FIELD_NAME_INVALID(typeOf(field)));
+        if (!isPrimitive(value)) throw new Error(STRINGS.QUERY_FIELD_VALUE_INVALID(typeOf(value)));
       }
     }
   }

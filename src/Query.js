@@ -1,5 +1,5 @@
-const { UTILS } = require('./internals');
-const { isInteger, isString, isObject, mergeDeep, isArrayOfStrings, deferredPromise } = UTILS;
+const { UTILS, STRINGS } = require('./internals');
+const { isInteger, isString, isObject, mergeDeep, isArrayOfStrings, deferredPromise, typeOf } = UTILS;
 const { isValidFirestoreField, isValidSort } = require('./validate/shared');
 const QueryInternal = require('./internals/QueryInternal');
 
@@ -16,26 +16,26 @@ class Query extends QueryInternal {
 
   /**
    *
-   * @param val
+   * @param value
    * @return {Query}
    */
-  limit(val) {
-    if (this._isFindOne) throw new Error('limit cannot be used with findOne');
-    if (!isInteger(val)) throw new Error('limit must be an integer'); // todo
-    if (val < 0) throw new Error('limit should not be less than 0'); // todo
-    this._limit = val;
+  limit(value) {
+    if (this._isFindOne) throw new Error(STRINGS.QUERY_LIMIT_USAGE_WITH_FINDONE);
+    if (!isInteger(value)) throw new Error(STRINGS.INVALID_PARAM_TYPE('limit', 'value', 'integer', typeOf(value)));
+    if (value < 0) throw new Error(STRINGS.QUERY_LIMIT_LESS_THAN_ZERO);
+    this._limit = value;
     return this;
   }
 
   /**
    *
-   * @param val
+   * @param value
    * @return {Query}
    */
-  page(val) {
-    if (!isInteger(val)) throw new Error('page must be an integer'); // todo
-    if (val < 0) throw new Error('page should not be less than 0'); // todo
-    this._page = val;
+  page(value) {
+    if (!isInteger(value)) throw new Error(STRINGS.INVALID_PARAM_TYPE('page', 'value', 'integer', typeOf(value)));
+    if (value < 0) throw new Error(STRINGS.QUERY_PAGE_LESS_THAN_ZERO);
+    this._page = value;
     return this;
   }
 
@@ -45,7 +45,7 @@ class Query extends QueryInternal {
    * @return {Query}
    */
   where(criteria) {
-    if (!isObject(criteria)) throw new Error('criteria must be an object'); // todo
+    if (!isObject(criteria)) throw new Error(STRINGS.INVALID_PARAM_TYPE('where', 'criteria', 'object', typeOf(criteria)));
     mergeDeep(this._criteria, criteria);
     return this;
   }
@@ -56,7 +56,7 @@ class Query extends QueryInternal {
    * @return {Query}
    */
   select(arrayOfFields) {
-    if (!isArrayOfStrings(arrayOfFields)) throw new Error('field to select must be an array of strings'); // todo
+    if (!isArrayOfStrings(arrayOfFields)) throw new Error(STRINGS.QUERY_SELECT_INVALID_TYPE);
     const out = {};
     for (let i = 0, len = arrayOfFields.length; i < len; i++) {
       out[arrayOfFields[i]] = true;
@@ -85,15 +85,11 @@ class Query extends QueryInternal {
       const value = entries[i][1];
 
       if (!isValidFirestoreField(field)) {
-        throw new Error('invalid firestore field name for sort()'); // todo
-      }
-
-      if (!isValidFirestoreField(field)) {
-        throw new Error('invalid firestore field name for sort()'); // todo
+        throw new Error(STRINGS.QUERY_SORT_INVALID_FIELD_NAME(field));
       }
 
       if (!isValidSort(value)) {
-        throw new Error('sort value must be one of X Y Z'); // todo
+        throw new Error(STRINGS.QUERY_SORT_INVALID_FIELD_VALUE(value));
       }
     }
 
@@ -106,7 +102,7 @@ class Query extends QueryInternal {
    * @param field
    */
   populate(field) {
-    if (!isString(field)) throw new Error('field to populate must be of type string'); // todo
+    if (!isString(field)) throw new Error(STRINGS.INVALID_PARAM_TYPE('populate', 'field', 'string', typeOf(field)));
     return this;
   }
 

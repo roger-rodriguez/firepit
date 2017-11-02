@@ -10,7 +10,6 @@ const {
   hasOwnProp,
   isUndefined,
   generateDocumentId,
-  tryCatch,
 } = UTILS;
 const { validateValueForType } = require('./validate/shared');
 
@@ -113,100 +112,9 @@ class Model extends ModelInternal {
    * @return {*}
    */
   findOneById(id) {
-    if (!isString(id)) return Promise.reject(new Error(STRINGS.MODEL_INVALID_PARAM_TYPE('findOneById', 'id', 'string', typeOf(id))));
+    if (!isString(id)) throw new Error(STRINGS.INVALID_PARAM_TYPE('findOneById', 'id', 'string', typeOf(id)));
     return new Query(this, id).isFindOne(true);
   }
-
-  /**
-   * Validates the pre-document object, throws if invalid or returns the generated output document if valid.
-   * @param document
-   * @param partial
-   */
-  validate(document, partial = false) {
-    // TODO
-    if (!isObject(document)) return Promise.reject(new Error('document must be an object'));
-
-    const mappedDoc = {};
-    const attributes = this.schema.schema ? this.schema.attributes : Object.assign(objectToTypeMap(document), this.schema.attributes);
-    const entries = Object.entries(attributes);
-
-    for (let i = 0, len = entries.length; i < len; i++) {
-      const attrName = entries[i][0];
-      const attrValue = entries[i][1];
-
-      // Skip attribute check
-      if (partial && !hasOwnProp(document, attrName)) continue;
-
-      // validate required fields if it full check
-      if (!partial && !hasOwnProp(attrValue, 'defaultsTo') && attrValue.required && !hasOwnProp(document, attrName)) {
-        return Promise.reject(new Error(`missing required attr ${attrName}`));
-      }
-
-      const value = hasOwnProp(document, attrName) ? document[attrName] : attrValue.defaultsTo;
-
-      // Validate Types
-
-      // if type is 'any' or 'undefined' then skip type checks
-      if (attrValue.type !== 'any' && !isUndefined(attrValue.type) && !validateValueForType(value, attrValue.type)) {
-        return Promise.reject(new Error(`Attr '${attrName}' has invalid type, expected '${attrValue.type}' got '${typeOf(value)}'`));
-      }
-
-      // Validate Properties
-      if ((attrValue.type === 'string' && attrValue.enum) && !attrValue.enum.includes(value)) {
-        return Promise.reject(new Error(`Attr '${attrName}' has invalid value, expected one of ${attrValue.enum.join(', ')} got ${value}`));
-      }
-
-      if ((attrValue.type === 'string' && hasOwnProp(attrValue, 'minLength')) && (value.length < attrValue.minLength)) {
-        return Promise.reject(new Error(`Attr '${attrName}' has invalid value, expected minimum length of ${attrValue.minLength} but got length of ${value.length}`));
-      }
-
-      if ((attrValue.type === 'string' && hasOwnProp(attrValue, 'maxLength')) && (value.length > attrValue.maxLength)) {
-        return Promise.reject(new Error(`Attr '${attrName}' has invalid value, expected maximum length of ${attrValue.maxLength} but got length of ${value.length}`));
-      }
-
-      if (attrValue.validate) {
-        const error = tryCatch(attrValue.validate.bind(document, value));
-        if (error) return Promise.reject(error);
-      }
-
-      mappedDoc[attrValue.fieldName || attrName] = value;
-    }
-
-    delete mappedDoc.id;
-    return Promise.resolve(mappedDoc);
-  }
-
-  /**
-   * Create a new document for this model.
-   * @param document
-   */
-  create(document) {
-    if (this.schema._schema.autoId && document.id) {
-      return Promise.reject(new Error('Cannot contain ID when autoId is enabled'));
-    }
-
-    if (!this.schema._schema.autoId && !document.id) {
-      return Promise.reject(new Error(`ID ${document.id} is not valid`));
-    }
-
-    const id = document.id || generateDocumentId();
-
-    return this.findOneById(id)
-      .then((exists) => {
-        if (exists) {
-          return Promise.reject(new Error(`Document with the ID ${id} already exists. Create failed.`));
-        }
-        return this.validate(document);
-      })
-      .then((validated) => {
-        this.touchCreated(validated);
-        return this.nativeCollection.doc(id).set(validated);
-      })
-      .then(() => {
-        return this.findOneById(id);
-      });
-  }
-
 
   /**
    * Finds an existing document by ID or criteria, and creates if it does not exist
@@ -214,8 +122,8 @@ class Model extends ModelInternal {
    * @param document
    */
   findOrCreate(criteriaOrString, document) {
-    if (isObject(criteriaOrString) && criteriaOrString.id) {
-      return Promise.reject(new Error('Given criteria cannot contain an id key. Use .findOrCreate(id <-- unique ID'));
+    if (isObject(criteriaOrString) && hasOwnProp(criteriaOrString, 'id')) {
+      return Promise.reject(new Error(STRINGS.CRITERIA_CONTAINS_ID('findOrCreate')));
     }
 
     return new Query(this, criteriaOrString)
@@ -229,6 +137,41 @@ class Model extends ModelInternal {
   }
 
   /**
+   * Create a new document for this model.
+   * @param document
+   */
+  create(document) {
+    if (this.schema._schema.autoId && document.id) {
+      return Promise.reject(new Error(STRINGS.CREATE_WITH_ID_AND_AUTOID));
+    }
+
+    if (!this.schema._schema.autoId && !document.id) {
+      return Promise.reject(new Error(STRINGS.CREATE_WITHOUT_ID));
+    }
+
+    const id = document.id || generateDocumentId();
+
+    if (!isString(id)) {
+      return Promise.reject(new Error(STRINGS.CREATE_INVALID_ID(typeOf(id))));
+    }
+
+    return this.findOneById(id)
+      .then((exists) => {
+        if (exists) {
+          return Promise.reject(new Error(STRINGS.CREATE_DOCUMENT_EXISTS(id)));
+        }
+        return this.validate(document);
+      })
+      .then((validated) => {
+        this.touchCreated(validated);
+        return this.nativeCollection.doc(id).set(validated);
+      })
+      .then(() => {
+        return this.findOneById(id);
+      });
+  }
+
+  /**
    *
    * @param filter
    * @param update
@@ -236,7 +179,7 @@ class Model extends ModelInternal {
    */
   update(filter, update, batchSize = 50) {
     if (isString(filter)) {
-      throw new Error('Given criteria should not be a string. Use .updateOne(id <-- unique ID');
+      throw new Error(STRINGS.CRITERIA_CONTAINS_ID('update'));
     }
 
     return this.validate(update, true)
@@ -253,18 +196,18 @@ class Model extends ModelInternal {
    */
   updateOne(id, document) {
     if (!isString(id)) {
-      return Promise.reject(new Error(STRINGS.MODEL_INVALID_PARAM_TYPE('updateOne', 'id', 'string', typeOfid)));
+      return Promise.reject(new Error(STRINGS.INVALID_PARAM_TYPE('updateOne', 'id', 'string', typeOf(id))));
     }
 
     if (!isObject(document)) {
-      return Promise.reject(new Error(STRINGS.MODEL_INVALID_PARAM_TYPE('updateOne', 'document', 'object', typeOf(document))));
+      return Promise.reject(new Error(STRINGS.INVALID_PARAM_TYPE('updateOne', 'document', 'object', typeOf(document))));
     }
 
-    if (update.id) {
-      return Promise.reject(new Error('update cannot contain ID field'));
+    if (document.id) {
+      return Promise.reject(new Error(STRINGS.UPDATE_WITH_ID));
     }
 
-    return this.validate(update, true)
+    return this.validate(document, true)
       .then((validated) => {
         this.touchUpdated(validated);
         return this.nativeCollection.doc(id).update(validated);
@@ -315,11 +258,11 @@ class Model extends ModelInternal {
    */
   destroy(criteriaOrStringOrArray = null, batchSize = 50) {
     if (isObject(criteriaOrStringOrArray) && criteriaOrStringOrArray.id) {
-      return Promise.reject('Given criteria cannot contain an id key. Use .destroy(id <-- unique ID');
+      return Promise.reject(STRINGS.CRITERIA_CONTAINS_ID('destroy'));
     }
 
     if (isArray(criteriaOrStringOrArray) && !isArrayOfStrings(criteriaOrStringOrArray)) {
-      return Promise.reject('Given array must be an array of string IDs');
+      return Promise.reject(STRINGS.DESTROY_INVALID_ARRAY);
     }
 
     if (isNull(criteriaOrStringOrArray) || isObject(criteriaOrStringOrArray)) {
@@ -343,6 +286,81 @@ class Model extends ModelInternal {
   subscribe(criteriaOrString = {}, onData, onError) {
     return new Query(this, criteriaOrString)
       .onSnapshot(onData, onError);
+  }
+
+  /**
+   * Validates the pre-document object, throws if invalid or returns the generated output document if valid.
+   * @param document
+   * @param partial
+   */
+  validate(document, partial = false) {
+    if (!isObject(document)) return Promise.reject(new Error(STRINGS.VALIDATE_INVALID_TYPE(typeOf(document))));
+
+    const mappedDoc = {};
+    const attributes = this.schema.schema ? this.schema.attributes : Object.assign(objectToTypeMap(document), this.schema.attributes);
+    const entries = Object.entries(attributes);
+
+    const errors = [];
+
+    for (let i = 0, len = entries.length; i < len; i++) {
+      const attrName = entries[i][0];
+      const attrValue = entries[i][1];
+
+      // Skip attribute check
+      if (partial && !hasOwnProp(document, attrName)) continue;
+
+      // skip if the field isn't present and its not required
+      if (!hasOwnProp(document, attrName) && !attrValue.required) continue;
+
+      // validate required fields if it full check
+      if (!partial && !hasOwnProp(attrValue, 'defaultsTo') && attrValue.required && !hasOwnProp(document, attrName)) {
+        errors.push(STRINGS.VALIDATE_MISSING_REQUIRED(attrName));
+        continue;
+      }
+
+      const value = hasOwnProp(document, attrName) ? document[attrName] : attrValue.defaultsTo;
+
+      // Validate Types
+
+      // if type is 'any' or 'undefined' then skip type checks
+      if (attrValue.type !== 'any' && !isUndefined(attrValue.type) && !validateValueForType(value, attrValue.type)) {
+        errors.push(STRINGS.VALIDATE_INVALID_ATTRIBUTE_TYPE(attrName, attrValue.type, typeOf(value)));
+        continue;
+      }
+
+      // Validate Properties
+      if ((attrValue.type === 'string' && attrValue.enum) && !attrValue.enum.includes(value)) {
+        errors.push(STRINGS.VALIDATE_NOT_ENUM_TYPE(attrName, attrValue.enum, value));
+        continue;
+      }
+
+      if ((attrValue.type === 'string' && hasOwnProp(attrValue, 'minLength')) && (value.length < attrValue.minLength)) {
+        errors.push(STRINGS.VALIDATE_INVALID_MINIMUM_LENGTH(attrName, attrValue.minLength, value.length));
+        continue;
+      }
+
+      if ((attrValue.type === 'string' && hasOwnProp(attrValue, 'maxLength')) && (value.length > attrValue.maxLength)) {
+        errors.push(STRINGS.VALIDATE_INVALID_MAXIMUM_LENGTH(attrName, attrValue.maxLength, value.length));
+        continue;
+      }
+
+      if (attrValue.validate) {
+        const error = attrValue.validate.call(document, value);
+        if (error) {
+          errors.push(error);
+          continue;
+        }
+      }
+
+      mappedDoc[attrValue.fieldName || attrName] = value;
+    }
+
+    if (errors.length) {
+      return Promise.reject(new Error(STRINGS.VALIDATE_ERRORS(errors)));
+    }
+
+    delete mappedDoc.id;
+    return Promise.resolve(mappedDoc);
   }
 }
 

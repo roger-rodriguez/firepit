@@ -60,11 +60,13 @@ class SchemaInternal {
       validateFieldName(key, this._modelName, attribute);
 
       if (attribute.hasOne) {
+        attribute.hasOne = attribute.hasOne.toLowerCase();
         this._hasOne[attribute.fieldName] = attribute;
         continue;
       }
 
       if (attribute.hasMany) {
+        attribute.hasMany = attribute.hasMany.toLowerCase();
         this._hasMany[attribute.fieldName] = attribute;
         continue;
       }

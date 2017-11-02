@@ -93,11 +93,111 @@ module.exports = {
   },
 
   /**
+   * Query
+   */
+
+  QUERY_INVALID_ARGUMENTS(givenType) {
+    return `Invalid arguments provided to Query. Expecting type string or object but got ${givenType}.`;
+  },
+
+  QUERY_FIELD_NAME_INVALID(givenType) {
+    return `Invalid criteria field provided to Query. Expected type string but got ${givenType}.`;
+  },
+
+  QUERY_FIELD_VALUE_INVALID(givenType) {
+    return `Invalid criteria value provided to Query. Expected primitive type but got ${givenType}. To access deeply nested values the field name can be passed as dot notated syntax.`;
+  },
+
+  /**
+   * Query.limit
+   */
+
+  QUERY_LIMIT_USAGE_WITH_FINDONE: 'limit query modifier cannot be used with a findOne query.',
+
+  QUERY_LIMIT_LESS_THAN_ZERO: 'limit query modifier cannot be less than 0.',
+
+  /**
+   * Query.limit
+   */
+
+  QUERY_PAGE_LESS_THAN_ZERO: 'page query modifier cannot be less than 0.',
+
+  /**
+   * Query.select
+   */
+
+  QUERY_SELECT_INVALID_TYPE: 'select query modifier must be an array of string field names.',
+
+  /**
+   * Query.sort
+   */
+
+  QUERY_SORT_INVALID_FIELD_NAME(field) {
+    return `sort query modifier contains the field "${field}" which is an invalid Cloud Firestore field name.`
+  },
+
+  QUERY_SORT_INVALID_FIELD_VALUE(value) {
+    return `Invalid value provided to sort query modifier. Expected one of asc, desc, -1, 1 but got ${value}.`;
+  },
+
+  /**
    * Model Methods
    */
 
-  MODEL_INVALID_PARAM_TYPE(method, param, type, givenType) {
+  CRITERIA_CONTAINS_ID(method) {
+    return `Given criteria to ${method} query cannot contain an id. Use .${method}(id <-- criteria id.`
+  },
+
+  CREATE_WITH_ID_AND_AUTOID: 'Given document to create query cannot contain an id as "autoId" is enabled for this model.',
+
+  CREATE_WITHOUT_ID: 'Given document to create query must contain a unique id as "autoId" is disabled for this model.',
+
+  CREATE_INVALID_ID(givenType) {
+    return `Given document to create query contains an invalid id. Expected type string but got ${givenType}.`;
+  },
+
+  CREATE_DOCUMENT_EXISTS(id) {
+    return `Document with the id "${id}" already exists in the database. Create query failed.`;
+  },
+
+  UPDATE_WITH_ID: 'Given document to update query cannot contain an id',
+
+  DESTROY_INVALID_ARRAY: 'Given criteria to destroy method contains an array with a non-string value. Expected array of string ids.',
+
+  INVALID_PARAM_TYPE(method, param, type, givenType) {
     return `Invalid parameter "${param}" on method "${method}". Expected type ${type} but got ${givenType}.`;
+  },
+
+  /**
+   * Document Validation
+   */
+
+  VALIDATE_INVALID_TYPE(givenType) {
+    return `Given document to query is an invalid type. Expected object but got ${givenType}`;
+  },
+
+  VALIDATE_INVALID_ATTRIBUTE_TYPE(attribute, type, givenType) {
+    return `Invalid attribute type given for "${attribute}". Expected ${type} but got ${givenType}.`;
+  },
+
+  VALIDATE_MISSING_REQUIRED(attribute) {
+    return `Missing required attribute "${attribute}".`;
+  },
+
+  VALIDATE_NOT_ENUM_TYPE(attribute, types, givenValue) {
+    return `Invalid value given for attribute "${attribute}". Expected one of ${types.join(', ')} but got ${givenValue}`;
+  },
+
+  VALIDATE_INVALID_MINIMUM_LENGTH(attribute, minLength, givenLength) {
+    return `Invalid attribute value given for "${attribute}". Expected minimum length of ${minLength} but got length ${givenLength}.`;
+  },
+
+  VALIDATE_INVALID_MAXIMUM_LENGTH(attribute, minLength, givenLength) {
+    return `Invalid attribute value given for "${attribute}". Expected maxLength length of ${minLength} but got length ${givenLength}.`;
+  },
+
+  VALIDATE_ERRORS(errors) {
+    return `Given document contains validation errors: \n\n${errors.map((e, i) => `${i+1}) ${e}`).join('\n')}`;
   },
 
 };
