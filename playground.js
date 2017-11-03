@@ -31,7 +31,7 @@ firebase.firepit().createModel('User', {
     // one to many - virtual field
     posts: {
       hasMany: 'post',
-      via: 'created_by',
+      via: 'creator',
     },
 
     // one to one - actual field
@@ -72,7 +72,7 @@ firebase.firepit().createModel('Post', {
     title: 'string',
 
     // one to many - actual field
-    created_by: {
+    creator: {
       hasOne: 'user',
     },
 
@@ -88,17 +88,23 @@ firebase.firepit().createModel('Post', {
 firebase.firepit().initialize();
 const User = firebase.firepit().model('User');
 const Post = firebase.firepit().model('Post');
+const Vehicle = firebase.firepit().model('Vehicle');
 
-Post.findOneById('DuJrCe3pOgjiqk8uIpTd')
-  .populate('created_by')
+// Vehicle.create({
+//   make: 'Pony',
+// })
+// todo findOne with no id should return limit(1) query
+User.find()
+  .populate('first_post')
+  .populate('posts')
   .then((res) => {
+    console.log(JSON.stringify(res, null, 4));
     debugger;
   })
   .catch((e) => {
+  console.error(e)
     debugger;
-  })
+  });
 
 
-Post.create({
-  user: 'xyz'
-})
+

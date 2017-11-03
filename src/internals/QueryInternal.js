@@ -27,7 +27,7 @@ class QueryInternal {
     this._model = model;
     this._reject = null;
     this._resolve = null;
-    this._populates = {};
+    this._populates = null;
     this._promise = null;
     this._criteria = null;
     this._isFindOne = false;
@@ -146,11 +146,64 @@ class QueryInternal {
    * @private
    */
   _handleQueryResponse(deferred, response) {
-    if (this._docId) {
-      return deferred._resolve(documentSnapshot.call(this, response));
-    }
-
+    if (this._docId) return deferred._resolve(documentSnapshot.call(this, response));
     return deferred._resolve(querySnapshot.call(this, response));
+  }
+
+  /**
+   *
+   * @param fn
+   * @return {*}
+   */
+  thenWithPopulates(fn) {
+    return this.nativeQuery.get()
+      .then((response) => {
+        if (this._docId) return documentSnapshot.call(this, response);
+        return querySnapshot.call(this, response);
+      })
+      .then((response) => {
+        const promises = [];
+        const associations = Object.values(this._populates);
+        const responses = Array.isArray(response) ? response : [response];
+
+        for (let i = 0, len = responses.length; i < len; i++) {
+          const response = responses[i];
+          for (let j = 0, len = associations.length; j < len; j++) {
+            const { association } = associations[j];
+            const { join, fieldName, model, via } = association;
+            const isMany = join.startsWith('many');
+
+            if (!isMany && (isUndefined(response[fieldName]) || !isString(response[fieldName]))) {
+              promises.push(Promise.resolve(null));
+              continue;
+            }
+
+            if (isMany) {
+              promises.push(model.find({ [via]: response.id }));
+            } else {
+              promises.push(model.findOneById(response[fieldName]));
+            }
+          }
+        }
+
+        return Promise.all(promises).then((results) => ({
+          results,
+          responses,
+          associations,
+          single: !Array.isArray(response)
+        }));
+      })
+      .then(({ results, responses, associations, single }) => {
+        for (let i = 0, len = responses.length; i < len; i++) {
+          for (let j = 0, len = associations.length; j < len; j++) {
+            const { association } = associations[j];
+            responses[i][association.fieldName] = results[(i * associations.length) + j];
+          }
+        }
+
+        return single ? responses[0] : responses;
+      })
+      .then(fn);
   }
 
   /**

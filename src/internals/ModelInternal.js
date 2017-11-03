@@ -34,6 +34,7 @@ class ModelInternal {
     }
 
     this.appName = appName;
+    this.appInternal = APPS[appName];
     this.modelName = modelName;
     this.identity = modelName.toLowerCase();
     this.schema = new Schema(appName, modelName, schema);

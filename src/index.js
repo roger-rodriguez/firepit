@@ -21,6 +21,11 @@ function initialize() {
     // validate model associations
     appInternal.models[schemaKeys[i]].schema._validateAssociations();
   }
+
+  for (let i = 0, len = schemaKeys.length; i < len; i++) {
+    const schema = appInternal.models[schemaKeys[i]].schema;
+    APPS[schema._appName].associations.setAssociationsForModel(APPS[schema._appName].models[schema._modelName]);
+  }
 }
 
 /**

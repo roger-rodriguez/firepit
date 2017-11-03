@@ -99,20 +99,26 @@ class Query extends QueryInternal {
 
   /**
    *
-   * @param field
+   * @param fieldName
+   * @param opts
    */
-  populate(field) {
-    if (!isString(field)) throw new Error(STRINGS.INVALID_PARAM_TYPE('populate', 'field', 'string', typeOf(field)));
-    // todo add query populate types
-    this._populates[field] = true;
+  populate(fieldName) {
+    if (!isString(fieldName)) throw new Error(STRINGS.INVALID_PARAM_TYPE('populate', 'fieldName', 'string', typeOf(fieldName)));
+    const association = this._model.appInternal.associations.getFieldForModel(fieldName, this._model.modelName);
+    if (!association) throw new Error(`Unknown populate field ${fieldName} for model ${this._model.modelName}`);
+
+    if (!this._populates) this._populates = {};
+    this._populates[fieldName] = { association };
     return this;
   }
+
 
   /**
    * Promise .then proxy
    * @param fn
    */
   then(fn) {
+    if (this._populates) return this.thenWithPopulates(fn);
     const deferred = deferredPromise();
     // transform output TODO move me / transform error output
     this.nativeQuery.get().then(this._handleQueryResponse.bind(this, deferred)).catch(deferred._reject);

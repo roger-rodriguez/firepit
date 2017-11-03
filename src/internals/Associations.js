@@ -6,6 +6,7 @@ const JOIN_TYPES = {
 };
 
 function getJoinType(association) {
+  if (association.hasOne && association.via) return 'one2one';
   if (association.hasOne && !association.via) {
     // one to many OR one way association
     const otherModelAssocs = Object.values(association.model.schema._associations);
@@ -20,11 +21,28 @@ function getJoinType(association) {
       }
     }
 
+    if (hasMany && !association.via) return 'many2one';
     return hasMany ? 'one2many' : 'oneWay';
   }
 
-  if (association.hasOne && association.via) return 'one2one';
-  if (association.hasMany && association.via) return 'many2many';
+
+  if (association.hasMany && association.via) {
+    // one to many OR one way association
+    const otherModelAssocs = Object.values(association.model.schema._associations);
+
+    // check for pairing hasMany join
+    let hasOne = false;
+    for (let i = 0, len = otherModelAssocs.length; i < len; i++) {
+      const otherModelAssoc = otherModelAssocs[i];
+      if (otherModelAssoc.hasOne && !otherModelAssoc.via) {
+        hasOne = true;
+        break;
+      }
+    }
+
+    if (hasOne && association.via) return 'many2one';
+    return hasOne ? 'one2many' : 'many2many';
+  }
 
   // TODO
   throw new Error('Invalid model association.');
@@ -71,7 +89,7 @@ class Associations {
    * @return {*}
    */
   getFieldForModel(fieldName, modelName) {
-    if (!this._matrix[modelName] || this._matrix[modelName][fieldName]) return null;
+    if (!this._matrix[modelName] || !this._matrix[modelName][fieldName]) return null;
     return this._matrix[modelName][fieldName];
   }
 }
