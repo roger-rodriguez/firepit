@@ -44,6 +44,9 @@ module.exports = {
     return `Invalid defaultsTo value given on the "${attribute.fieldName}" attribute on the "${model}" model. Expected one of "${attribute.enum.join(', ')}" but got ${attribute.defaultsTo}.`;
   },
 
+  /**
+   * @return {string}
+   */
   ATTRIBUTE_ENUM_INVALID_TYPE(model, attribute, givenType) {
     return `Invalid enum value given on the "${attribute.fieldName}" attribute on the "${model}" model. Expected type array but got ${givenType}.`;
   },

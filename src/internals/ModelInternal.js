@@ -34,11 +34,11 @@ class ModelInternal {
     }
 
     this.appName = appName;
-    this.appInternal = APPS[appName];
     this.modelName = modelName;
+    this.appInternal = APPS[appName];
     this.identity = modelName.toLowerCase();
     this.schema = new Schema(appName, modelName, schema);
-    attachMagicMethods(this);
+    if (schema.autoMagicMethods) attachMagicMethods(this);
   }
 
   touchCreated(obj) {

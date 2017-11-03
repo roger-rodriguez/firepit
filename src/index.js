@@ -12,7 +12,7 @@ function initialize() {
 
   const appInternal = APPS[appName];
 
-  appInternal.associations = new Associations(appInternal);
+  appInternal.associations = new Associations();
 
   const schemaKeys = Object.keys(appInternal.schemas);
 

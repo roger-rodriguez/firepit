@@ -20,7 +20,6 @@ firepit.use(app, {
   },
 });
 
-
 firebase.firepit().createModel('User', {
   schema: true,
   attributes: {
@@ -94,17 +93,48 @@ const Vehicle = firebase.firepit().model('Vehicle');
 //   make: 'Pony',
 // })
 // todo findOne with no id should return limit(1) query
-User.find()
+console.time('hazzah');
+User.findOne('NIWoMm4pqAILtnIWXnQz')
   .populate('first_post')
+  .populate('vehicle')
   .populate('posts')
+  .populate('liked_posts', {
+    where: {},
+    limit: 10,
+    page: 10
+  })
   .then((res) => {
+    console.timeEnd('hazzah');
+
     console.log(JSON.stringify(res, null, 4));
     debugger;
   })
   .catch((e) => {
-  console.error(e)
+    console.error(e)
     debugger;
   });
 
 
+setTimeout(() => {
+  console.time('hazzah2');
+  User.findOne('NIWoMm4pqAILtnIWXnQz')
+    .populate('first_post')
+    .populate('vehicle')
+    .populate('posts')
+    .populate('liked_posts', {
+      where: {},
+      limit: 10,
+      page: 10
+    })
+    .then((res) => {
+      console.timeEnd('hazzah2');
 
+      console.log(JSON.stringify(res, null, 4));
+      debugger;
+    })
+    .catch((e) => {
+      console.error(e)
+      debugger;
+    });
+
+}, 5000);

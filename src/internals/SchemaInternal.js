@@ -85,7 +85,6 @@ class SchemaInternal {
     this._validateHasOneAssociations();
     this._validateHasManyAssociations();
     this._validatedAssociations = true;
-
     this._associations = Object.assign({}, this._hasMany, this._hasOne);
   }
 

@@ -178,20 +178,40 @@ class QueryInternal {
               continue;
             }
 
-            if (isMany) {
+            // manyToOne <-> oneToMany
+            if (isMany && join !== 'many2many') {
               promises.push(model.find({ [via]: response.id }));
-            } else {
-              promises.push(model.findOneById(response[fieldName]));
+              continue;
             }
+
+            // manyToMany
+            if (join === 'many2many') {
+              const joinModel = this._model.appInternal.associations.getJoinModel(this._model.modelName, association);
+              const promise = joinModel.find({
+                [this._model.modelName]: response.id,
+              }).then((joinDocs) => {
+                // todo batch
+                return Promise.all(joinDocs.map((doc => {
+                  return association.model.findOneById(doc[association.model.modelName]);
+                })));
+              });
+              promises.push(promise);
+              continue;
+            }
+
+            // oneToX
+            promises.push(model.findOneById(response[fieldName]));
           }
         }
 
-        return Promise.all(promises).then((results) => ({
-          results,
-          responses,
-          associations,
-          single: !Array.isArray(response)
-        }));
+        return Promise
+          .all(promises)
+          .then((results) => ({
+            results,
+            responses,
+            associations,
+            single: !Array.isArray(response)
+          }));
       })
       .then(({ results, responses, associations, single }) => {
         for (let i = 0, len = responses.length; i < len; i++) {

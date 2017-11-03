@@ -12,6 +12,7 @@ INTERNALS.DEFAULTS = {
       app: '[DEFAULT]',
       identity: name.toLowerCase(),
       autoId: true,
+      autoMagicMethods: true,
       autoCreatedAt: true,
       autoUpdatedAt: true,
       autoCreatedBy: true,

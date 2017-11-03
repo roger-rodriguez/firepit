@@ -1,3 +1,5 @@
+const Model = require('../Model');
+
 const JOIN_TYPES = {
   one2one: true,
   one2many: true,
@@ -25,21 +27,12 @@ function getJoinType(association) {
     return hasMany ? 'one2many' : 'oneWay';
   }
 
-
   if (association.hasMany && association.via) {
     // one to many OR one way association
-    const otherModelAssocs = Object.values(association.model.schema._associations);
+    const otherModelAssoc = association.model.schema._associations[association.via];
 
-    // check for pairing hasMany join
-    let hasOne = false;
-    for (let i = 0, len = otherModelAssocs.length; i < len; i++) {
-      const otherModelAssoc = otherModelAssocs[i];
-      if (otherModelAssoc.hasOne && !otherModelAssoc.via) {
-        hasOne = true;
-        break;
-      }
-    }
-
+    // check for pairing hasOne join
+    const hasOne = otherModelAssoc.hasOne && !otherModelAssoc.via;
     if (hasOne && association.via) return 'many2one';
     return hasOne ? 'one2many' : 'many2many';
   }
@@ -48,10 +41,25 @@ function getJoinType(association) {
   throw new Error('Invalid model association.');
 }
 
+function getJoinModelName(str1, str2) {
+  return [str1, str2].sort((a, b) => a.localeCompare(b)).join('-');
+}
+
 class Associations {
   constructor(appInternal) {
     this._matrix = {};
-    this._app = appInternal;
+    this._internalModels = {};
+  }
+
+  /**
+   *
+   * @param currentModelName
+   * @param association
+   * @return {*}
+   */
+  getJoinModel(currentModelName, association) {
+    const name = getJoinModelName(`${association.hasMany}_${association.via}`, `${currentModelName}_${association.fieldName}`);
+    return this._internalModels[name];
   }
 
   /**
@@ -64,22 +72,28 @@ class Associations {
 
     for (let i = 0, len = associations.length; i < len; i++) {
       const association = associations[i];
+      const join = getJoinType(association);
       associationsWithJoin[association.fieldName] = {
         ...association,
-        join: getJoinType(association),
+        join,
       };
+
+      if (join === 'many2many') {
+        const name = getJoinModelName(`${association.hasMany}_${association.via}`, `${model.modelName}_${association.fieldName}`);
+        this._internalModels[name] = new Model(model.appName, name, {
+          attributes: {
+            [association.hasMany]: 'string',
+            [model.modelName]: 'string',
+          },
+          autoMagicMethods: false,
+          autoUpdatedAt: false,
+          autoCreatedBy: false,
+          autoUpdatedBy: false,
+        });
+      }
     }
 
     this._matrix[model.modelName] = associationsWithJoin;
-  }
-
-  /**
-   *
-   * @param modelName
-   * @return {boolean}
-   */
-  modelHasJoins(modelName) {
-    return !!this._matrix[modelName];
   }
 
   /**
